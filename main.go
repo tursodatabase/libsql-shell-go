@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/chiselstrike/libsql-shell/cmd"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	cmd.Init()
 }
