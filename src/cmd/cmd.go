@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
+
+	"github.com/chiselstrike/libsql-shell/src/lib"
 )
 
 type RootArgs struct {
@@ -20,19 +21,19 @@ func NewRootCmd() *cobra.Command {
 		Use:   "libsql-shell",
 		Short: "A cli for executing SQL statements on a libSQL or SQLite database",
 		Run: func(cmd *cobra.Command, args []string) {
-			db, err := sql.Open("sqlite3", rootArgs.dbPath)
+			db, err := lib.OpenOrCreateSQLite3(rootArgs.dbPath)
 			if err != nil {
-				cmd.Println("Error opening database:", err)
+				cmd.PrintErrln("Error opening database:", err)
 				os.Exit(1)
 			}
 			defer db.Close()
 
-			_, err = db.Exec(rootArgs.statements)
+			result, err := lib.ExecuteStatements(db, rootArgs.statements)
 			if err != nil {
-				cmd.Println("Error executing SQL statements:", err)
+				cmd.PrintErrln("Error executing SQL statements:", err)
 				os.Exit(1)
 			}
-			cmd.Println("SQL statements executed successfully")
+			cmd.Println(result)
 		},
 	}
 
