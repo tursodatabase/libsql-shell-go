@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/chiselstrike/libsql-shell/cmd"
+	"github.com/chiselstrike/libsql-shell/src/cmd"
 )
 
 func main() {
