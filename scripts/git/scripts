@@ -1,0 +1,49 @@
+#!/bin/bash
+set -e
+
+# colors
+export RED='\033[0;31m'
+export BLACK_ON_RED='\033[41m'
+export BLUE='\033[0;34m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[0;33m'
+export BGMAGENTA='\033[0;45m'
+export BOLD='\033[1m'
+export NC='\033[0m' # No Color
+
+function check_staged_files() {
+  STAGED_FILES="$(git diff --cached --diff-filter=ACMR --oneline --name-only --relative)"
+  if [ -z "$STAGED_FILES" ]; then
+    echo "No files changed, nothing to check"
+    return 1
+  fi
+}
+
+function test_go() {
+  if ! [ -x "$(command which go)" ]; then
+    printf '%bPlease install Go before running the hook%b\n' "$BLACK_ON_RED" "$NC"
+    return 1
+  fi
+}
+
+function call_vet() {
+  printf "\n\e[33;1m%s\e[0m\n" 'Running the Go Vet'
+
+  if go vet -v ./... ; then
+    printf '%b%bSUCCESS: Go vet run successfully with no errors.%b\n' "$GREEN" "$BOLD" "$NC"
+  else
+    printf '%b%bFAILED: Go vet analyzer errors and try again.%b\n' "$RED" "$BOLD" "$NC"
+    return 1
+  fi
+}
+
+function call_tests() {
+  printf "\n\e[33;1m%s\e[0m\n" 'Running tests'
+
+  if go test -v ./... ; then
+    printf '%b%bSUCCESS: Go test run successfully with no errors.%b\n' "$GREEN" "$BOLD" "$NC"
+  else
+    printf '%b%bFAILED: Fix test errors and try again.%b\n' "$RED" "$BOLD" "$NC"
+    return 1
+  fi
+}

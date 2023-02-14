@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# shellcheck source=scripts/git/scripts
+source "$(dirname "$0")"/scripts
+
+test_go
+call_vet
+call_tests
