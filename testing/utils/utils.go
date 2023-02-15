@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func execute(t *testing.T, c *cobra.Command, args ...string) (string, error) {
+func Execute(t *testing.T, c *cobra.Command, args ...string) (string, error) {
 	t.Helper()
 
 	buf := new(bytes.Buffer)
