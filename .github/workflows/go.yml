@@ -30,6 +30,9 @@ jobs:
       - name: Vet
         run: go vet -v ./...
 
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+
       - name: Build
         run: go build -v ./...
 
