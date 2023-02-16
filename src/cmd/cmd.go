@@ -18,22 +18,22 @@ type RootArgs struct {
 func NewRootCmd() *cobra.Command {
 	var rootArgs RootArgs = RootArgs{}
 	var rootCmd = &cobra.Command{
-		Use:   "libsql-shell",
-		Short: "A cli for executing SQL statements on a libSQL or SQLite database",
-		Run: func(cmd *cobra.Command, args []string) {
+		Use:          "libsql-shell",
+		Short:        "A cli for executing SQL statements on a libSQL or SQLite database",
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			db, err := lib.OpenOrCreateSQLite3(rootArgs.dbPath)
 			if err != nil {
-				cmd.PrintErrln("Error opening database:", err)
-				os.Exit(1)
+				return err
 			}
 			defer db.Close()
 
 			result, err := lib.ExecuteStatements(db, rootArgs.statements)
 			if err != nil {
-				cmd.PrintErrln("Error executing SQL statements:", err)
-				os.Exit(1)
+				return err
 			}
 			cmd.Println(result)
+			return nil
 		},
 	}
 
