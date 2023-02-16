@@ -12,17 +12,18 @@ import (
 
 type RootArgs struct {
 	statements string
-	dbPath     string
 }
 
 func NewRootCmd() *cobra.Command {
 	var rootArgs RootArgs = RootArgs{}
 	var rootCmd = &cobra.Command{
+		SilenceUsage: true,
 		Use:          "libsql-shell",
 		Short:        "A cli for executing SQL statements on a libSQL or SQLite database",
-		SilenceUsage: true,
+		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := lib.OpenOrCreateSQLite3(rootArgs.dbPath)
+			dbPath := args[0]
+			db, err := lib.OpenOrCreateSQLite3(dbPath)
 			if err != nil {
 				return err
 			}
@@ -39,8 +40,6 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd.Flags().StringVarP(&rootArgs.statements, "exec", "e", "", "SQL statements separated by ;")
 	rootCmd.MarkFlagRequired("exec")
-	rootCmd.Flags().StringVarP(&rootArgs.dbPath, "db", "d", "", "Path to database file")
-	rootCmd.MarkFlagRequired("db")
 
 	return rootCmd
 }

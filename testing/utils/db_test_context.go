@@ -24,7 +24,7 @@ func NewTestContext(t *testing.T) *DbTestContext {
 }
 
 func (tc *DbTestContext) Execute(statements string) (string, error) {
-	return Execute(tc.T, tc.rootCmd, "--db", tc.dbPath, "--exec", statements)
+	return Execute(tc.T, tc.rootCmd, "--exec", statements, tc.dbPath)
 }
 
 func (tc *DbTestContext) CreateEmptySimpleTable(tableName string) {

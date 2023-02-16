@@ -15,29 +15,19 @@ func TestRootCommandFlags_WhenAllFlagsAreProvided_ExpectSQLStatementsExecutedWit
 	dbPath := c.TempDir() + `\test.sqlite`
 	rootCmd := cmd.NewRootCmd()
 
-	_, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);", "--db", dbPath)
+	_, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);", dbPath)
 
 	c.Assert(err, qt.IsNil)
 }
 
-func TestRootCommandFlags_WhenAllRequiredFlagsAreMissing_ExpectErrorReturned(t *testing.T) {
-	c := qt.New(t)
-
-	rootCmd := cmd.NewRootCmd()
-
-	_, err := utils.Execute(t, rootCmd)
-
-	c.Assert(err.Error(), qt.Equals, `required flag(s) "db", "exec" not set`)
-}
-
-func TestRootCommandFlags_WhenDbFlagIsMissing_ExpectErrorReturned(t *testing.T) {
+func TestRootCommandFlags_WhenDbIsMissing_ExpectErrorReturned(t *testing.T) {
 	c := qt.New(t)
 
 	rootCmd := cmd.NewRootCmd()
 
 	_, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);")
 
-	c.Assert(err.Error(), qt.Equals, `required flag(s) "db" not set`)
+	c.Assert(err.Error(), qt.Equals, `accepts 1 arg(s), received 0`)
 }
 
 func TestRootCommandFlags_WhenExecFlagIsMissing_ExpectErrorReturned(t *testing.T) {
@@ -45,7 +35,7 @@ func TestRootCommandFlags_WhenExecFlagIsMissing_ExpectErrorReturned(t *testing.T
 
 	rootCmd := cmd.NewRootCmd()
 
-	_, err := utils.Execute(t, rootCmd, "--db", "test.sqlite")
+	_, err := utils.Execute(t, rootCmd, "test.sqlite")
 
 	c.Assert(err.Error(), qt.Equals, `required flag(s) "exec" not set`)
 }
