@@ -3,7 +3,7 @@ package lib
 import (
 	"database/sql"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -58,12 +58,12 @@ func (db *Db) ExecuteStatements(statementsString string) (string, error) {
 	return allStatementResults, nil
 }
 
-func (db *Db) ExecuteAndPrintStatements(statementsString string) {
+func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, errF io.Writer) {
 	result, err := db.ExecuteStatements(statementsString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+		fmt.Fprintf(errF, "Error: %s\n", err.Error())
 	} else {
-		fmt.Println(result)
+		fmt.Fprintln(outF, result)
 	}
 }
 
