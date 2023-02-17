@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/xwb1989/sqlparser"
 )
 
 const COLUMN_SEPARATOR = "|"
-const STATEMENT_SEPARATOR = ";"
 
 func OpenOrCreateSQLite3(filename string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", filename)
@@ -24,7 +24,11 @@ func OpenOrCreateSQLite3(filename string) (*sql.DB, error) {
 }
 
 func ExecuteStatements(db *sql.DB, statementsString string) (string, error) {
-	statements := strings.Split(statementsString, STATEMENT_SEPARATOR)
+	statements, err := sqlparser.SplitStatementToPieces(statementsString)
+	if err != nil {
+		return "", err
+	}
+
 	statementResults := make([]string, 0, len(statements))
 	for _, statement := range statements {
 		statementResult, err := executeStatement(db, statement)

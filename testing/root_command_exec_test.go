@@ -92,3 +92,19 @@ func TestRootCommandExec_WhenSendStatementWithSemicolonAtEnd_ExpectNoError(t *te
 
 	tc.Assert(err, qt.IsNil)
 }
+
+func TestRootCommandExec_GivenSimpleTableCreated_WhenInsertValueWithSemiColumnAndSelectIt_ExpectNoError(t *testing.T) {
+	tc := utils.NewTestContext(t)
+	tc.CreateEmptySimpleTable("simple_table")
+
+	result, err := tc.Execute("INSERT INTO simple_table(textField, intField) VALUES ('text;Value', 1)")
+	tc.Assert(err, qt.IsNil)
+	tc.Assert(result, qt.Equals, "")
+
+	result, err = tc.Execute("SELECT * FROM simple_table")
+	tc.Assert(err, qt.IsNil)
+
+	resultLines := strings.Split(result, "\n")
+	tc.Assert(resultLines, qt.HasLen, 2)
+	tc.Assert(resultLines[1], qt.Matches, `.*\|text;Value\|1`)
+}
