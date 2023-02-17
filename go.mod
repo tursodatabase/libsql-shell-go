@@ -8,7 +8,10 @@ require (
 	github.com/spf13/cobra v1.6.1
 )
 
+require golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
+
 require (
+	github.com/chzyer/readline v1.5.1
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

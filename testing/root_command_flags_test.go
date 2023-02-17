@@ -29,13 +29,3 @@ func TestRootCommandFlags_WhenDbIsMissing_ExpectErrorReturned(t *testing.T) {
 
 	c.Assert(err.Error(), qt.Equals, `accepts 1 arg(s), received 0`)
 }
-
-func TestRootCommandFlags_WhenExecFlagIsMissing_ExpectErrorReturned(t *testing.T) {
-	c := qt.New(t)
-
-	rootCmd := cmd.NewRootCmd()
-
-	_, err := utils.Execute(t, rootCmd, "test.sqlite")
-
-	c.Assert(err.Error(), qt.Equals, `required flag(s) "exec" not set`)
-}
