@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"database/sql"
 	"fmt"
 	"io"
 	"strings"
@@ -23,7 +22,7 @@ func NewReadline(in io.Reader, out io.Writer, err io.Writer) (*readline.Instance
 	})
 }
 
-func RunShell(l *readline.Instance, db *sql.DB) error {
+func (db *Db) RunShell(l *readline.Instance) error {
 	defer l.Close()
 	l.CaptureExitSignal()
 
@@ -48,7 +47,7 @@ func RunShell(l *readline.Instance, db *sql.DB) error {
 		case QUIT_COMMAND:
 			return nil
 		default:
-			result, err := ExecuteStatements(db, line)
+			result, err := db.ExecuteStatements(line)
 			if err != nil {
 				fmt.Fprintf(l.Stderr(), "Error: %s\n", err.Error())
 			} else {
