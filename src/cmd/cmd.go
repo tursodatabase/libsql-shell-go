@@ -29,6 +29,14 @@ func NewRootCmd() *cobra.Command {
 			}
 			defer db.Close()
 
+			if len(rootArgs.statements) == 0 {
+				l, err := lib.NewReadline(cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr())
+				if err != nil {
+					return err
+				}
+				return lib.RunShell(l, db)
+			}
+
 			result, err := lib.ExecuteStatements(db, rootArgs.statements)
 			if err != nil {
 				return err
@@ -39,7 +47,6 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	rootCmd.Flags().StringVarP(&rootArgs.statements, "exec", "e", "", "SQL statements separated by ;")
-	rootCmd.MarkFlagRequired("exec")
 
 	return rootCmd
 }
