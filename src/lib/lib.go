@@ -10,8 +10,12 @@ import (
 	"github.com/xwb1989/sqlparser"
 )
 
+type dbOptions struct {
+	withoutHeader bool
+}
 type Db struct {
-	sqlDb *sql.DB
+	sqlDb   *sql.DB
+	options dbOptions
 }
 
 const COLUMN_SEPARATOR = "|"
@@ -81,7 +85,9 @@ func (db *Db) executeStatement(statement string) (string, error) {
 
 	result := make([]string, 0)
 
-	result = append(result, strings.Join(columnNames, COLUMN_SEPARATOR))
+	if !db.options.withoutHeader {
+		result = append(result, strings.Join(columnNames, COLUMN_SEPARATOR))
+	}
 
 	columnValues := make([]string, len(columnNames))
 	columnPointers := make([]interface{}, len(columnNames))
