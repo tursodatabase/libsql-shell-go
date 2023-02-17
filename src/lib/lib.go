@@ -2,28 +2,38 @@ package lib
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
 )
 
+type Db struct {
+	sqlDb *sql.DB
+}
+
 const COLUMN_SEPARATOR = "|"
 
-func OpenOrCreateSQLite3(filename string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", filename)
+func NewSQLite3(filename string) (*Db, error) {
+	sqlDb, err := sql.Open("sqlite3", filename)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = db.Ping(); err != nil {
+	if err = sqlDb.Ping(); err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	return &Db{sqlDb: sqlDb}, nil
 }
 
-func ExecuteStatements(db *sql.DB, statementsString string) (string, error) {
+func (db *Db) Close() {
+	db.sqlDb.Close()
+}
+
+func (db *Db) ExecuteStatements(statementsString string) (string, error) {
 	statements, err := sqlparser.SplitStatementToPieces(statementsString)
 	if err != nil {
 		return "", err
@@ -31,7 +41,7 @@ func ExecuteStatements(db *sql.DB, statementsString string) (string, error) {
 
 	statementResults := make([]string, 0, len(statements))
 	for _, statement := range statements {
-		statementResult, err := executeStatement(db, statement)
+		statementResult, err := db.executeStatement(statement)
 		if err != nil {
 			return "", err
 		}
@@ -44,12 +54,21 @@ func ExecuteStatements(db *sql.DB, statementsString string) (string, error) {
 	return allStatementResults, nil
 }
 
-func executeStatement(db *sql.DB, statement string) (string, error) {
+func (db *Db) ExecuteAndPrintStatements(statementsString string) {
+	result, err := db.ExecuteStatements(statementsString)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+	} else {
+		fmt.Println(result)
+	}
+}
+
+func (db *Db) executeStatement(statement string) (string, error) {
 	if strings.TrimSpace(statement) == "" {
 		return "", nil
 	}
 
-	rows, err := db.Query(statement)
+	rows, err := db.sqlDb.Query(statement)
 	if err != nil {
 		return "", err
 	}
@@ -60,7 +79,9 @@ func executeStatement(db *sql.DB, statement string) (string, error) {
 		return "", err
 	}
 
-	result := strings.Join(columnNames, COLUMN_SEPARATOR)
+	result := make([]string, 0)
+
+	result = append(result, strings.Join(columnNames, COLUMN_SEPARATOR))
 
 	columnValues := make([]string, len(columnNames))
 	columnPointers := make([]interface{}, len(columnNames))
@@ -74,10 +95,10 @@ func executeStatement(db *sql.DB, statement string) (string, error) {
 			return "", err
 		}
 
-		result = result + "\n" + strings.Join(columnValues, COLUMN_SEPARATOR)
+		result = append(result, strings.Join(columnValues, COLUMN_SEPARATOR))
 	}
 
-	return result, nil
+	return strings.Join(result, "\n"), nil
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {
