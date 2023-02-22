@@ -30,11 +30,8 @@ func NewRootCmd() *cobra.Command {
 			defer db.Close()
 
 			if len(rootArgs.statements) == 0 {
-				l, err := lib.NewReadline(cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr())
-				if err != nil {
-					return err
-				}
-				return lib.RunShell(l, db)
+				l := lib.NewPrompt(cmd.InOrStdin(), cmd.OutOrStdout(), cmd.ErrOrStderr(), db)
+				lib.RunShell(l)
 			}
 
 			result, err := lib.ExecuteStatements(db, rootArgs.statements)
