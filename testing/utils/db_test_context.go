@@ -27,6 +27,10 @@ func (tc *DbTestContext) Execute(statements string) (string, error) {
 	return Execute(tc.T, tc.rootCmd, "--exec", statements, tc.dbPath)
 }
 
+func (tc *DbTestContext) ExecuteShell(commands []string) (string, error) {
+	return ExecuteWithInitialInput(tc.T, tc.rootCmd, strings.Join(commands, "\n"), tc.dbPath)
+}
+
 func (tc *DbTestContext) CreateEmptySimpleTable(tableName string) {
 	_, err := tc.Execute("CREATE TABLE " + tableName + " (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)")
 	tc.Assert(err, qt.IsNil)
