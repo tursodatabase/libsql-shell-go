@@ -23,7 +23,7 @@ func NewRootCmd() *cobra.Command {
 		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbPath := args[0]
-			db, err := lib.NewSQLite3(dbPath)
+			db, err := lib.NewDb(dbPath)
 			if err != nil {
 				return err
 			}
