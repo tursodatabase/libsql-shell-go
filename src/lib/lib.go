@@ -4,10 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
+
+	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
 )
 
 type Db struct {
@@ -20,8 +23,14 @@ type Result struct {
 
 const COLUMN_SEPARATOR = "|"
 
-func NewSQLite3(filename string) (*Db, error) {
-	sqlDb, err := sql.Open("sqlite3", filename)
+func NewDb(dbPath string) (*Db, error) {
+	var sqlDb *sql.DB
+	var err error
+	if isHttpUrl(dbPath) {
+		sqlDb, err = sql.Open("libsql", dbPath)
+	} else {
+		sqlDb, err = sql.Open("sqlite3", dbPath)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +40,14 @@ func NewSQLite3(filename string) (*Db, error) {
 	}
 
 	return &Db{sqlDb: sqlDb}, nil
+}
+
+func isHttpUrl(path string) bool {
+	url, err := url.ParseRequestURI(path)
+	if err != nil {
+		return false
+	}
+	return url.Scheme == "http" || url.Scheme == "https"
 }
 
 func (db *Db) Close() {

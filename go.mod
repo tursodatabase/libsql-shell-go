@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/frankban/quicktest v1.14.4
+	github.com/libsql/sqld/packages/golang/libsql-client v0.0.0-20230301144623-3c86897b436d
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 )
