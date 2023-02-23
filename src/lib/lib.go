@@ -8,6 +8,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
+
+	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
 )
 
 type dbOptions struct {
@@ -20,8 +22,14 @@ type Db struct {
 
 const COLUMN_SEPARATOR = "|"
 
-func NewSQLite3(filename string) (*Db, error) {
-	sqlDb, err := sql.Open("sqlite3", filename)
+func NewDb(dbPath string) (*Db, error) {
+	var sqlDb *sql.DB
+	var err error
+	if isHttpUrl(dbPath) {
+		sqlDb, err = sql.Open("libsql", dbPath)
+	} else {
+		sqlDb, err = sql.Open("sqlite3", dbPath)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +39,10 @@ func NewSQLite3(filename string) (*Db, error) {
 	}
 
 	return &Db{sqlDb: sqlDb}, nil
+}
+
+func isHttpUrl(path string) bool {
+	return strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://")
 }
 
 func (db *Db) Close() {
