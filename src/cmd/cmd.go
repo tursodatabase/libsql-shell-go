@@ -30,7 +30,13 @@ func NewRootCmd() *cobra.Command {
 			defer db.Close()
 
 			if len(rootArgs.statements) == 0 {
-				shellConfig := lib.ShellConfig{InF: cmd.InOrStdin(), OutF: cmd.OutOrStdout(), ErrF: cmd.ErrOrStderr()}
+				shellConfig := lib.ShellConfig{
+					InF:         cmd.InOrStdin(),
+					OutF:        cmd.OutOrStdout(),
+					ErrF:        cmd.ErrOrStderr(),
+					HistoryFile: fmt.Sprintf("%s/.libsql_shell_history", os.Getenv("HOME")),
+				}
+
 				return db.RunShell(&shellConfig)
 			}
 

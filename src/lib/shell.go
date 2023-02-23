@@ -12,15 +12,17 @@ const QUIT_COMMAND = ".quit"
 const WELCOME_MESSAGE = "Welcome to LibSQL shell!\n\nType \".quit\" to exit the shell, \".tables\" to list all tables, and \".schema\" to show table schemas.\n\n"
 
 type ShellConfig struct {
-	InF  io.Reader
-	OutF io.Writer
-	ErrF io.Writer
+	InF         io.Reader
+	OutF        io.Writer
+	ErrF        io.Writer
+	HistoryFile string
 }
 
 func NewReadline(config *ShellConfig) (*readline.Instance, error) {
 	return readline.NewEx(&readline.Config{
 		Prompt:          "→  ",
 		InterruptPrompt: "^C",
+		HistoryFile:     config.HistoryFile,
 		EOFPrompt:       QUIT_COMMAND,
 		Stdin:           io.NopCloser(config.InF),
 		Stdout:          config.OutF,
