@@ -4,5 +4,7 @@
 source "$(dirname "$0")"/scripts
 
 test_go
+test_golangci-lint
 call_vet
+call_lint
 call_tests

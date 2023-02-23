@@ -26,6 +26,13 @@ function test_go() {
   fi
 }
 
+function test_golangci-lint () {
+  if ! [ -x "$(command which golangci-lint)" ]; then
+    printf '%bPlease install golangci-lint before running the hook%b\n' "$BLACK_ON_RED" "$NC"
+    return 1
+  fi
+}
+
 function call_vet() {
   printf "\n\e[33;1m%s\e[0m\n" 'Running the Go Vet'
 
@@ -44,6 +51,17 @@ function call_tests() {
     printf '%b%bSUCCESS: Go test run successfully with no errors.%b\n' "$GREEN" "$BOLD" "$NC"
   else
     printf '%b%bFAILED: Fix test errors and try again.%b\n' "$RED" "$BOLD" "$NC"
+    return 1
+  fi
+}
+
+function call_lint() {
+  printf "\n\e[33;1m%s\e[0m\n" 'Running the Go Lint'
+
+  if golangci-lint run ./... ; then
+    printf '%b%bSUCCESS: Go lint run successfully with no errors.%b\n' "$GREEN" "$BOLD" "$NC"
+  else 
+    printf '%b%bFAILED: Go lint analyzer errors and try again.%b\n' "$RED" "$BOLD" "$NC"
     return 1
   fi
 }
