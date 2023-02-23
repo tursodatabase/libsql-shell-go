@@ -36,7 +36,7 @@ function test_golangci-lint () {
 function call_vet() {
   printf "\n\e[33;1m%s\e[0m\n" 'Running the Go Vet'
 
-  if go vet -v ./... ; then
+  if go vet ./... ; then
     printf '%b%bSUCCESS: Go vet run successfully with no errors.%b\n' "$GREEN" "$BOLD" "$NC"
   else
     printf '%b%bFAILED: Go vet analyzer errors and try again.%b\n' "$RED" "$BOLD" "$NC"
