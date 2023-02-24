@@ -63,7 +63,7 @@ func (db *Db) RunShell(config *ShellConfig) error {
 		case isCommand(line):
 			db.executeCommand(line, config)
 		default:
-			db.ExecuteAndPrintStatements(line, l.Stdout(), l.Stderr())
+			db.ExecuteAndPrintStatements(line, l.Stdout(), l.Stderr(), false)
 		}
 
 	}
@@ -87,9 +87,7 @@ var sqlAliasCommands = map[string]string{
 func (db *Db) executeCommand(command string, config *ShellConfig) {
 	statement, isSqlAliasCommands := sqlAliasCommands[command]
 	if isSqlAliasCommands {
-		db.options.withoutHeader = true
-		db.ExecuteAndPrintStatements(statement, config.OutF, config.ErrF)
-		db.options.withoutHeader = false
+		db.ExecuteAndPrintStatements(statement, config.OutF, config.ErrF, true)
 	} else {
 		fmt.Println("Unknown command")
 	}

@@ -8,7 +8,10 @@ require (
 	github.com/spf13/cobra v1.6.1
 )
 
-require golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
+require (
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
+)
 
 require (
 	github.com/chzyer/readline v1.5.1
@@ -16,6 +19,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2

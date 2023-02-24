@@ -32,7 +32,7 @@ func TestRootCommandShell_WhenCreateTable_ExpectDbHaveTheTable(t *testing.T) {
 	result, err := tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "SELECT * FROM test;"})
 
 	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, "name")
+	tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{}))
 }
 
 func TestRootCommandShell_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithTheData(t *testing.T) {
@@ -41,7 +41,7 @@ func TestRootCommandShell_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithT
 	result, err := tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "INSERT INTO test VALUES ('test');", "SELECT * FROM test;"})
 
 	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, "name\ntest")
+	tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{{"test"}}))
 }
 
 func TestRootCommandShell_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands(t *testing.T) {
