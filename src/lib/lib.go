@@ -10,12 +10,12 @@ import (
 	"github.com/xwb1989/sqlparser"
 )
 
-type dbOptions struct {
-	withoutHeader bool
-}
 type Db struct {
-	sqlDb   *sql.DB
-	options dbOptions
+	sqlDb *sql.DB
+}
+type Result struct {
+	ColumnNames []string
+	Data        [][]string
 }
 
 const COLUMN_SEPARATOR = "|"
@@ -37,60 +37,69 @@ func (db *Db) Close() {
 	db.sqlDb.Close()
 }
 
-func (db *Db) ExecuteStatements(statementsString string) (string, error) {
+func (db *Db) ExecuteStatements(statementsString string) ([]Result, error) {
 	statements, err := sqlparser.SplitStatementToPieces(statementsString)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	statementResults := make([]string, 0, len(statements))
+	statementResults := make([]Result, 0, len(statements))
 	for _, statement := range statements {
-		statementResult, err := db.executeStatement(statement)
+		result, err := db.executeStatement(statement)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		if strings.TrimSpace(statementResult) != "" {
-			statementResults = append(statementResults, statementResult)
+		if result != nil {
+			statementResults = append(statementResults, *result)
 		}
 	}
 
-	allStatementResults := strings.Join(statementResults, "\n")
-	return allStatementResults, nil
+	return statementResults, nil
 }
 
-func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, errF io.Writer) {
-	result, err := db.ExecuteStatements(statementsString)
+func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, errF io.Writer, withoutHeader bool) {
+	results, err := db.ExecuteStatements(statementsString)
 	if err != nil {
 		fmt.Fprintf(errF, "Error: %s\n", err.Error())
-	} else {
-		fmt.Fprintln(outF, result)
+		return
+	}
+
+	PrintStatementsResults(results, outF, withoutHeader)
+}
+
+func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) {
+	for _, result := range results {
+		if len(result.ColumnNames) != 0 {
+			if withoutHeader {
+				PrintTable(outF, nil, result.Data)
+			} else {
+				PrintTable(outF, result.ColumnNames, result.Data)
+			}
+		}
 	}
 }
 
-func (db *Db) executeStatement(statement string) (string, error) {
+func (db *Db) executeStatement(statement string) (*Result, error) {
 	if strings.TrimSpace(statement) == "" {
-		return "", nil
+		return nil, nil
 	}
 
 	rows, err := db.sqlDb.Query(statement)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer rows.Close()
 
 	columnNames, err := getColumnNames(rows)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	result := make([]string, 0)
+	data := make([][]string, 0)
 
-	if !db.options.withoutHeader {
-		result = append(result, strings.Join(columnNames, COLUMN_SEPARATOR))
-	}
-
-	columnValues := make([]string, len(columnNames))
-	columnPointers := make([]interface{}, len(columnNames))
+	columnNamesLen := len(columnNames)
+	columnValues := make([]string, columnNamesLen)
+	columnPointers := make([]interface{}, columnNamesLen)
 	for i := range columnNames {
 		columnPointers[i] = &columnValues[i]
 	}
@@ -98,13 +107,15 @@ func (db *Db) executeStatement(statement string) (string, error) {
 	for rows.Next() {
 		err = rows.Scan(columnPointers...)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		result = append(result, strings.Join(columnValues, COLUMN_SEPARATOR))
+		currentRow := make([]string, columnNamesLen)
+		copy(currentRow, columnValues)
+		data = append(data, currentRow)
 	}
 
-	return strings.Join(result, "\n"), nil
+	return &Result{ColumnNames: columnNames, Data: data}, nil
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {

@@ -40,11 +40,11 @@ func NewRootCmd() *cobra.Command {
 				return db.RunShell(&shellConfig)
 			}
 
-			result, err := db.ExecuteStatements(rootArgs.statements)
+			results, err := db.ExecuteStatements(rootArgs.statements)
 			if err != nil {
 				return err
 			}
-			cmd.Println(result)
+			lib.PrintStatementsResults(results, cmd.OutOrStdout(), false)
 			return nil
 		},
 	}
