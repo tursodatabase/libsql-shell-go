@@ -29,23 +29,27 @@ func NewRootCmd() *cobra.Command {
 			}
 			defer db.Close()
 
-			if len(rootArgs.statements) == 0 {
-				shellConfig := lib.ShellConfig{
-					InF:         cmd.InOrStdin(),
-					OutF:        cmd.OutOrStdout(),
-					ErrF:        cmd.ErrOrStderr(),
-					HistoryFile: fmt.Sprintf("%s/.libsql_shell_history", os.Getenv("HOME")),
+			if cmd.Flag("exec").Changed {
+				if len(rootArgs.statements) == 0 {
+					return fmt.Errorf("no SQL command to execute")
 				}
 
-				return db.RunShell(&shellConfig)
+				results, err := db.ExecuteStatements(rootArgs.statements)
+				if err != nil {
+					return err
+				}
+				lib.PrintStatementsResults(results, cmd.OutOrStdout(), false)
+				return nil
 			}
 
-			results, err := db.ExecuteStatements(rootArgs.statements)
-			if err != nil {
-				return err
+			shellConfig := lib.ShellConfig{
+				InF:         cmd.InOrStdin(),
+				OutF:        cmd.OutOrStdout(),
+				ErrF:        cmd.ErrOrStderr(),
+				HistoryFile: fmt.Sprintf("%s/.libsql_shell_history", os.Getenv("HOME")),
 			}
-			lib.PrintStatementsResults(results, cmd.OutOrStdout(), false)
-			return nil
+
+			return db.RunShell(&shellConfig)
 		},
 	}
 
