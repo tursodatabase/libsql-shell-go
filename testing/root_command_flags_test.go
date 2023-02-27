@@ -29,3 +29,11 @@ func TestRootCommandFlags_WhenDbIsMissing_ExpectErrorReturned(t *testing.T) {
 
 	c.Assert(err.Error(), qt.Equals, `accepts 1 arg(s), received 0`)
 }
+
+func TestRootCommandFlags_GivenEmptyStatements_ExpectErrorReturned(t *testing.T) {
+	tc := utils.NewTestContext(t)
+
+	_, err := tc.Execute("")
+
+	tc.Assert(err.Error(), qt.IsNotNil)
+}
