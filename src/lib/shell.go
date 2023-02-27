@@ -78,9 +78,15 @@ var sqlAliasCommands = map[string]string{
 	".tables": `select name from sqlite_schema
 		where type = 'table'
 		and name not like 'sqlite_%'
+		and name != '_litestream_seq'
+		and name != '_litestream_lock'
+		and name != 'libsql_wasm_func_table'
 		order by name`,
 	".schema": `select sql from sqlite_schema
 		where name not like 'sqlite_%'
+		and name != '_litestream_seq'
+		and name != '_litestream_lock'
+		and name != 'libsql_wasm_func_table'
 		order by name`,
 }
 
