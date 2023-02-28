@@ -112,3 +112,10 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenSimpleTableCreated_WhenI
 func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
 	suite.Run(t, NewRootCommandExecSuite(t.TempDir()+"test.sqlite"))
 }
+
+func (s *RootCommandExecSuite) TestRootCommandExec_GivenEmptyDB_WhenSelectNull_ExpectNULLAsReturn() {
+	result, err := s.tc.Execute("SELECT NULL")
+	s.tc.Assert(err, qt.IsNil)
+
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"NULL"}, [][]interface{}{{"NULL"}}))
+}
