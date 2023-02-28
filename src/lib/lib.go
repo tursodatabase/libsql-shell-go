@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"reflect"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -18,7 +19,7 @@ type Db struct {
 }
 type Result struct {
 	ColumnNames []string
-	Data        [][]string
+	Data        [][]interface{}
 }
 
 const COLUMN_SEPARATOR = "|"
@@ -84,19 +85,30 @@ func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer,
 		return
 	}
 
-	PrintStatementsResults(results, outF, withoutHeader)
+	err = PrintStatementsResults(results, outF, withoutHeader)
+	if err != nil {
+		fmt.Fprintf(errF, "Error: %s\n", err.Error())
+		return
+	}
 }
 
-func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) {
+func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) error {
 	for _, result := range results {
 		if len(result.ColumnNames) != 0 {
 			if withoutHeader {
-				PrintTable(outF, nil, result.Data)
+				err := PrintTable(outF, nil, result.Data)
+				if err != nil {
+					return err
+				}
 			} else {
-				PrintTable(outF, result.ColumnNames, result.Data)
+				err := PrintTable(outF, result.ColumnNames, result.Data)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }
 
 func (db *Db) executeStatement(statement string) (*Result, error) {
@@ -115,13 +127,22 @@ func (db *Db) executeStatement(statement string) (*Result, error) {
 		return nil, err
 	}
 
-	data := make([][]string, 0)
+	columnTypes, err := getColumnTypes(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([][]interface{}, 0)
 
 	columnNamesLen := len(columnNames)
-	columnValues := make([]string, columnNamesLen)
+
 	columnPointers := make([]interface{}, columnNamesLen)
-	for i := range columnNames {
-		columnPointers[i] = &columnValues[i]
+	for i, t := range columnTypes {
+		if t.Kind() == reflect.Struct {
+			columnPointers[i] = reflect.New(t).Interface()
+		} else {
+			columnPointers[i] = new(interface{})
+		}
 	}
 
 	for rows.Next() {
@@ -130,9 +151,12 @@ func (db *Db) executeStatement(statement string) (*Result, error) {
 			return nil, err
 		}
 
-		currentRow := make([]string, columnNamesLen)
-		copy(currentRow, columnValues)
-		data = append(data, currentRow)
+		rowData := make([]interface{}, len(columnTypes))
+		for i, ptr := range columnPointers {
+			val := reflect.ValueOf(ptr).Elem()
+			rowData[i] = val.Interface()
+		}
+		data = append(data, rowData)
 	}
 
 	return &Result{ColumnNames: columnNames, Data: data}, nil
@@ -150,4 +174,18 @@ func getColumnNames(rows *sql.Rows) ([]string, error) {
 	}
 
 	return columnNames, nil
+}
+
+func getColumnTypes(rows *sql.Rows) ([]reflect.Type, error) {
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return nil, err
+	}
+	types := make([]reflect.Type, len(columnTypes))
+
+	for i, ct := range columnTypes {
+		types[i] = ct.ScanType()
+	}
+
+	return types, nil
 }

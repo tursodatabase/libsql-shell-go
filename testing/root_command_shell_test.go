@@ -34,14 +34,14 @@ func (s *RootCommandShellSuite) TestRootCommandShell_WhenCreateTable_ExpectDbHav
 	result, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "SELECT * FROM test;"})
 
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]interface{}{}))
 }
 
 func (s *RootCommandShellSuite) TestRootCommandShell_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithTheData() {
 	result, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "INSERT INTO test VALUES ('test');", "SELECT * FROM test;"})
 
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{{"test"}}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]interface{}{{"test"}}))
 }
 
 func (s *RootCommandShellSuite) TestRootCommandShell_WhenNoCommandsAreProvided_ExpectShellExecutedWithoutError() {

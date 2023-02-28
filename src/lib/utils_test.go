@@ -11,7 +11,7 @@ func TestGetTableOutput_GivenHeaderWithoutData_ExpectTableHasJustHeader(t *testi
 	c := qt.New(t)
 
 	header := []string{"id", "value"}
-	data := [][]string{}
+	data := [][]interface{}{}
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "ID     VALUE")
@@ -21,7 +21,7 @@ func TestGetTableOutput_GivenHeaderWithData_ExpectTableHasHeaderAndData(t *testi
 	c := qt.New(t)
 
 	header := []string{"id", "value"}
-	data := [][]string{{"1", "test"}}
+	data := [][]interface{}{{"1", "test"}}
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "ID     VALUE \n1      test")
@@ -31,7 +31,7 @@ func TestGetTableOutput_GivenDataWithoutHeader_ExpectTableHasJustData(t *testing
 	c := qt.New(t)
 
 	header := []string{}
-	data := [][]string{{"1", "test"}}
+	data := [][]interface{}{{"1", "test"}}
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "1     test")
@@ -41,7 +41,7 @@ func TestGetTableOutput_GivenHeaderWithMultipleRows_ExpectTableHasHeaderAndData(
 	c := qt.New(t)
 
 	header := []string{"id", "value"}
-	data := [][]string{{"1", "test"}, {"2", "test2"}}
+	data := [][]interface{}{{"1", "test"}, {"2", "test2"}}
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "ID     VALUE \n1      test      \n2      test2")
@@ -51,7 +51,7 @@ func TestGetTableOutput_GivenHeaderWithMultipleRowsAndDifferentLength_ExpectTabl
 	c := qt.New(t)
 
 	header := []string{"id", "value"}
-	data := [][]string{{"1", "test"}, {"2", "test2", "test3"}}
+	data := [][]interface{}{{"1", "test"}, {"2", "test2", "test3"}}
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "ID     VALUE           \n1      test      \n2      test2     test3")
@@ -61,7 +61,7 @@ func TestGetTableOutput_GivenHeaderNilAndData_ExpectTableHasJustData(t *testing.
 	c := qt.New(t)
 
 	header := []string(nil)
-	data := [][]string{{"1", "test"}}
+	data := [][]interface{}{{"1", "test"}}
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "1     test")
@@ -71,7 +71,7 @@ func TestGetTableOutput_GivenHeaderAndDataNil_ExpectTableHasJustHeader(t *testin
 	c := qt.New(t)
 
 	header := []string{"id", "value"}
-	data := [][]string(nil)
+	data := [][]interface{}(nil)
 	result := utils.GetPrintTableOutput(header, data)
 
 	c.Assert(result, qt.Equals, "ID     VALUE")
