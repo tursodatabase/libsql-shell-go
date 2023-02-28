@@ -39,7 +39,10 @@ func NewRootCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				lib.PrintStatementsResults(results, cmd.OutOrStdout(), false)
+				err = lib.PrintStatementsResults(results, cmd.OutOrStdout(), false)
+				if err != nil {
+					return err
+				}
 				return nil
 			}
 

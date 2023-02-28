@@ -54,7 +54,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenSimpleTableCreated_WhenS
 
 	headerLine := strings.Split(result, "\n")[0]
 
-	s.tc.Assert(headerLine, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{}))
+	s.tc.Assert(headerLine, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{}))
 }
 
 func (s *RootCommandExecSuite) TestRootCommandExec_GivenPopulatedSimpleTable_WhenSelectEntireTable_ExpectAllEntries() {
@@ -63,7 +63,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenPopulatedSimpleTable_Whe
 	result, err := s.tc.Execute("SELECT * FROM simple_table")
 	s.tc.Assert(err, qt.IsNil)
 
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "value1", "1"}, {"2", "value2", "2"}}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{{"1", "value1", "1"}, {"2", "value2", "2"}}))
 }
 
 func (s *RootCommandExecSuite) TestRootCommandExec_GivenPopulatedSimpleTable_WhenSelectEntireTableTwice_ExpectTwoResults() {
@@ -72,7 +72,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenPopulatedSimpleTable_Whe
 	result, err := s.tc.Execute("SELECT * FROM simple_table; SELECT * FROM simple_table")
 	s.tc.Assert(err, qt.IsNil)
 
-	resultText := utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "value1", "1"}, {"2", "value2", "2"}})
+	resultText := utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{{"1", "value1", "1"}, {"2", "value2", "2"}})
 	resultLines := resultText + "            \n" + resultText
 	s.tc.Assert(result, qt.ContentEquals, resultLines)
 }
@@ -82,7 +82,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenEmptyDb_WhenCreateInsert
 	result, err := s.tc.Execute("CREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER); INSERT INTO simple_table(textField, intField) VALUES ('value1', 1), ('value2', 2); SELECT * FROM simple_table")
 	s.tc.Assert(err, qt.IsNil)
 
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "value1", "1"}, {"2", "value2", "2"}}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{{"1", "value1", "1"}, {"2", "value2", "2"}}))
 }
 
 func (s *RootCommandExecSuite) TestRootCommandExec_WhenSendStatementWithSemicolonAtEnd_ExpectNoError() {
@@ -91,7 +91,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_WhenSendStatementWithSemicolo
 	result, err := s.tc.Execute("SELECT * FROM simple_table;;;;;;;")
 	s.tc.Assert(err, qt.IsNil)
 
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "value1", "1"}, {"2", "value2", "2"}}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{{"1", "value1", "1"}, {"2", "value2", "2"}}))
 
 	s.tc.Assert(err, qt.IsNil)
 }
@@ -106,7 +106,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenSimpleTableCreated_WhenI
 	result, err = s.tc.Execute("SELECT * FROM simple_table")
 	s.tc.Assert(err, qt.IsNil)
 
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "text;Value", "1"}}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{{"1", "text;Value", "1"}}))
 }
 
 func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
