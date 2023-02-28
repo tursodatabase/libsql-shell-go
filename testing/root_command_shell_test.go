@@ -3,52 +3,68 @@ package main_test
 import (
 	"testing"
 
+	qt "github.com/frankban/quicktest"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/chiselstrike/libsql-shell/src/lib"
 	"github.com/chiselstrike/libsql-shell/testing/utils"
-	qt "github.com/frankban/quicktest"
 )
 
-func TestRootCommandShell_WhenNoCommandsAreProvided_ExpectShellExecutedWithoutError(t *testing.T) {
-	tc := utils.NewTestContext(t)
+type RootCommandShellSuite struct {
+	suite.Suite
 
-	result, err := tc.ExecuteShell([]string{})
-
-	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, "")
+	// dbInTest utils.DbType
+	dbPath string
+	tc     *utils.DbTestContext
 }
 
-func TestRootCommandShell_WhenExecuteInvalidStatement_ExpectError(t *testing.T) {
-	tc := utils.NewTestContext(t)
-
-	result, err := tc.ExecuteShell([]string{"SELECTT 1;"})
-
-	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, "Error: near \"SELECTT\": syntax error")
+func NewRootCommandShellSuite(dbPath string) *RootCommandShellSuite {
+	return &RootCommandShellSuite{dbPath: dbPath}
 }
 
-func TestRootCommandShell_WhenCreateTable_ExpectDbHaveTheTable(t *testing.T) {
-	tc := utils.NewTestContext(t)
-
-	result, err := tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "SELECT * FROM test;"})
-
-	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{}))
+func (s *RootCommandShellSuite) SetupTest() {
+	s.tc = utils.NewTestContext(s.T(), s.dbPath)
 }
 
-func TestRootCommandShell_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithTheData(t *testing.T) {
-	tc := utils.NewTestContext(t)
-
-	result, err := tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "INSERT INTO test VALUES ('test');", "SELECT * FROM test;"})
-
-	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{{"test"}}))
+func (s *RootCommandShellSuite) TearDownTest() {
+	s.tc.TearDown()
 }
 
-func TestRootCommandShell_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands(t *testing.T) {
-	tc := utils.NewTestContext(t)
+func (s *RootCommandShellSuite) TestRootCommandShell_WhenCreateTable_ExpectDbHaveTheTable() {
+	result, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "SELECT * FROM test;"})
 
-	result, err := tc.ExecuteShell([]string{lib.QUIT_COMMAND, "SELECT 1;"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{}))
+}
 
-	tc.Assert(err, qt.IsNil)
-	tc.Assert(result, qt.Equals, "")
+func (s *RootCommandShellSuite) TestRootCommandShell_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithTheData() {
+	result, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "INSERT INTO test VALUES ('test');", "SELECT * FROM test;"})
+
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{{"test"}}))
+}
+
+func (s *RootCommandShellSuite) TestRootCommandShell_WhenNoCommandsAreProvided_ExpectShellExecutedWithoutError() {
+	result, err := s.tc.ExecuteShell([]string{})
+
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(result, qt.Equals, "")
+}
+
+func (s *RootCommandShellSuite) TestRootCommandShell_WhenExecuteInvalidStatement_ExpectError() {
+	result, err := s.tc.ExecuteShell([]string{"SELECTT 1;"})
+
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(result, qt.Equals, "Error: near \"SELECTT\": syntax error")
+}
+
+func (s *RootCommandShellSuite) TestRootCommandShell_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands() {
+	result, err := s.tc.ExecuteShell([]string{lib.QUIT_COMMAND, "SELECT 1;"})
+
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(result, qt.Equals, "")
+}
+
+func TestRootCommandShellSuite_WhenDbIsSQLite(t *testing.T) {
+	suite.Run(t, NewRootCommandShellSuite(t.TempDir()+"test.sqlite"))
 }

@@ -31,7 +31,8 @@ func TestRootCommandFlags_WhenDbIsMissing_ExpectErrorReturned(t *testing.T) {
 }
 
 func TestRootCommandFlags_GivenEmptyStatements_ExpectErrorReturned(t *testing.T) {
-	tc := utils.NewTestContext(t)
+	dbPath := t.TempDir() + `\test.sqlite`
+	tc := utils.NewTestContext(t, dbPath)
 
 	_, err := tc.Execute("")
 
