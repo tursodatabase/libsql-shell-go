@@ -109,13 +109,25 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenSimpleTableCreated_WhenI
 	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]interface{}{{"1", "text;Value", "1"}}))
 }
 
-func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
-	suite.Run(t, NewRootCommandExecSuite(t.TempDir()+"test.sqlite"))
-}
-
 func (s *RootCommandExecSuite) TestRootCommandExec_GivenEmptyDB_WhenSelectNull_ExpectNULLAsReturn() {
 	result, err := s.tc.Execute("SELECT NULL")
 	s.tc.Assert(err, qt.IsNil)
 
 	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"NULL"}, [][]interface{}{{"NULL"}}))
+}
+
+func (s *RootCommandExecSuite) TestRootCommandExec_GivenTableCotainingBlobField_WhenInsertAndSelect_ExpectNoError() {
+	_, err := s.tc.Execute("CREATE TABLE alltypes (t text, i integer, r real, b blob)")
+	s.tc.Assert(err, qt.IsNil)
+
+	_, err = s.tc.Execute("INSERT INTO alltypes VALUES ('text', 99, 3.14, x'0123456789ABCDEF')")
+	s.tc.Assert(err, qt.IsNil)
+
+	result, err := s.tc.Execute("SELECT * from alltypes")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"T", "I", "R", "B"}, [][]interface{}{{"text", "99", "3.14", "0123456789abcdef"}}))
+}
+
+func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
+	suite.Run(t, NewRootCommandExecSuite(t.TempDir()+"test.sqlite"))
 }
