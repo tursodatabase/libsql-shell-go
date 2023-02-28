@@ -59,6 +59,9 @@ func (db *Db) ExecuteStatements(statementsString string) (string, error) {
 	for _, statement := range statements {
 		statementResult, err := db.executeStatement(statement)
 		if err != nil {
+			if strings.Contains(err.Error(), "interactive transaction not allowed in HTTP queries") {
+				return "", &TransactionNotSupportedError{}
+			}
 			return "", err
 		}
 		if strings.TrimSpace(statementResult) != "" {
