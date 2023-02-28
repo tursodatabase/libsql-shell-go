@@ -12,6 +12,7 @@ import (
 
 type RootArgs struct {
 	statements string
+	quiet      bool
 }
 
 func NewRootCmd() *cobra.Command {
@@ -47,6 +48,7 @@ func NewRootCmd() *cobra.Command {
 				OutF:        cmd.OutOrStdout(),
 				ErrF:        cmd.ErrOrStderr(),
 				HistoryFile: fmt.Sprintf("%s/.libsql_shell_history", os.Getenv("HOME")),
+				QuietMode:   rootArgs.quiet,
 			}
 
 			return db.RunShell(&shellConfig)
@@ -54,6 +56,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	rootCmd.Flags().StringVarP(&rootArgs.statements, "exec", "e", "", "SQL statements separated by ;")
+	rootCmd.Flags().BoolVarP(&rootArgs.quiet, "quiet", "q", false, "Don't print welcome message")
 
 	return rootCmd
 }

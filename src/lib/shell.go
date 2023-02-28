@@ -16,6 +16,7 @@ type ShellConfig struct {
 	OutF        io.Writer
 	ErrF        io.Writer
 	HistoryFile string
+	QuietMode   bool
 }
 
 func NewReadline(config *ShellConfig) (*readline.Instance, error) {
@@ -38,7 +39,9 @@ func (db *Db) RunShell(config *ShellConfig) error {
 	defer l.Close()
 	l.CaptureExitSignal()
 
-	fmt.Print(WELCOME_MESSAGE)
+	if !config.QuietMode {
+		fmt.Print(WELCOME_MESSAGE)
+	}
 
 	for {
 		line, err := l.Readline()
