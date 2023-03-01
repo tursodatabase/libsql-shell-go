@@ -21,18 +21,18 @@ func NewTestContext(t *testing.T, dbPath string) *DbTestContext {
 	return &DbTestContext{T: t, C: qt.New(t), dbPath: dbPath}
 }
 
-func (tc *DbTestContext) Execute(statements string) (string, error) {
+func (tc *DbTestContext) Execute(statements string) (string, string, error) {
 	rootCmd := cmd.NewRootCmd()
 	return Execute(tc.T, rootCmd, "--exec", statements, tc.dbPath)
 }
 
-func (tc *DbTestContext) ExecuteShell(commands []string) (string, error) {
+func (tc *DbTestContext) ExecuteShell(commands []string) (outS string, errS string, err error) {
 	rootCmd := cmd.NewRootCmd()
 	return ExecuteWithInitialInput(tc.T, rootCmd, strings.Join(commands, "\n"), tc.dbPath, "--quiet")
 }
 
 func (tc *DbTestContext) CreateEmptySimpleTable(tableName string) {
-	_, err := tc.Execute("CREATE TABLE " + tableName + " (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)")
+	_, _, err := tc.Execute("CREATE TABLE " + tableName + " (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)")
 	tc.Assert(err, qt.IsNil)
 }
 
@@ -54,17 +54,17 @@ func (tc *DbTestContext) CreateSimpleTable(tableName string, initialValues []Sim
 	}
 	insertQuery := "INSERT INTO " + tableName + "(textField, intField) VALUES " + strings.Join(values, ",")
 
-	_, err := tc.Execute(insertQuery)
+	_, _, err := tc.Execute(insertQuery)
 	tc.Assert(err, qt.IsNil)
 }
 
 func (tc *DbTestContext) DropTable(tableName string) {
-	_, err := tc.Execute("DROP TABLE " + tableName)
+	_, _, err := tc.Execute("DROP TABLE " + tableName)
 	tc.Assert(err, qt.IsNil)
 }
 
 func (tc *DbTestContext) getAllTables() []string {
-	result, err := tc.ExecuteShell([]string{".tables"})
+	result, _, err := tc.ExecuteShell([]string{".tables"})
 	tc.Assert(err, qt.IsNil)
 	if strings.TrimSpace(result) == "" {
 		return []string{}

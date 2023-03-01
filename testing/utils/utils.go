@@ -9,28 +9,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Execute(t *testing.T, c *cobra.Command, args ...string) (string, error) {
+func Execute(t *testing.T, c *cobra.Command, args ...string) (string, string, error) {
 	return ExecuteWithInitialInput(t, c, "", args...)
 }
 
-func ExecuteWithInitialInput(t *testing.T, c *cobra.Command, initialInput string, args ...string) (string, error) {
+func ExecuteWithInitialInput(t *testing.T, c *cobra.Command, initialInput string, args ...string) (string, string, error) {
 	t.Helper()
 
-	buf := new(bytes.Buffer)
+	bufOut := new(bytes.Buffer)
+	bufErr := new(bytes.Buffer)
 	bufIn := new(bytes.Buffer)
 
 	_, err := bufIn.Write([]byte(initialInput))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	c.SetOut(buf)
-	c.SetErr(buf)
+	c.SetOut(bufOut)
+	c.SetErr(bufErr)
 	c.SetIn(bufIn)
 	c.SetArgs(args)
 
 	err = c.Execute()
-	return strings.TrimSpace(buf.String()), err
+	return strings.TrimSpace(bufOut.String()), strings.TrimSpace(bufErr.String()), err
 }
 
 func GetPrintTableOutput(header []string, data [][]string) string {
