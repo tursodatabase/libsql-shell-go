@@ -145,3 +145,12 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenTableCotainingBlobField_
 func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
 	suite.Run(t, NewRootCommandExecSuite(t.TempDir()+"test.sqlite"))
 }
+
+func TestRootCommandExecSuite_WhenDbIsTurso(t *testing.T) {
+	testConfig := utils.GetTestConfig(t)
+	if testConfig.SkipTursoTests {
+		t.Skip("Skipping Turso tests due configuration")
+	}
+
+	suite.Run(t, NewRootCommandExecSuite(testConfig.TursoDbPath))
+}

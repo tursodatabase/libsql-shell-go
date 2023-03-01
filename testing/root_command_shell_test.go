@@ -59,7 +59,7 @@ func (s *RootCommandShellSuite) Test_WhenExecuteInvalidStatement_ExpectError() {
 	s.tc.Assert(err, qt.IsNil)
 
 	s.tc.Assert(outS, qt.Equals, "")
-	s.tc.Assert(errS, qt.Equals, "Error: near \"SELECTT\": syntax error")
+	s.tc.Assert(len(errS), qt.Not(qt.Equals), 0)
 }
 
 func (s *RootCommandShellSuite) Test_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands() {
@@ -72,4 +72,13 @@ func (s *RootCommandShellSuite) Test_WhenTypingQuitCommand_ExpectShellNotRunFoll
 
 func TestRootCommandShellSuite_WhenDbIsSQLite(t *testing.T) {
 	suite.Run(t, NewRootCommandShellSuite(t.TempDir()+"test.sqlite"))
+}
+
+func TestRootCommandShellSuite_WhenDbIsTurso(t *testing.T) {
+	testConfig := utils.GetTestConfig(t)
+	if testConfig.SkipTursoTests {
+		t.Skip("Skipping Turso tests due configuration")
+	}
+
+	suite.Run(t, NewRootCommandShellSuite(testConfig.TursoDbPath))
 }
