@@ -30,39 +30,44 @@ func (s *RootCommandShellSuite) TearDownTest() {
 	s.tc.TearDown()
 }
 
-func (s *RootCommandShellSuite) TestRootCommandShell_WhenCreateTable_ExpectDbHaveTheTable() {
-	result, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "SELECT * FROM test;"})
-
+func (s *RootCommandShellSuite) Test_WhenCreateTable_ExpectDbHaveTheTable() {
+	outS, errS, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "SELECT * FROM test;"})
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{}))
+	s.tc.Assert(errS, qt.Equals, "")
+
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{}))
 }
 
-func (s *RootCommandShellSuite) TestRootCommandShell_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithTheData() {
-	result, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "INSERT INTO test VALUES ('test');", "SELECT * FROM test;"})
-
+func (s *RootCommandShellSuite) Test_WhenCreateTableAndInsertData_ExpectDbHaveTheTableWithTheData() {
+	outS, errS, err := s.tc.ExecuteShell([]string{"CREATE TABLE test (name STRING);", "INSERT INTO test VALUES ('test');", "SELECT * FROM test;"})
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{{"test"}}))
+	s.tc.Assert(errS, qt.Equals, "")
+
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"name"}, [][]string{{"test"}}))
 }
 
-func (s *RootCommandShellSuite) TestRootCommandShell_WhenNoCommandsAreProvided_ExpectShellExecutedWithoutError() {
-	result, err := s.tc.ExecuteShell([]string{})
+func (s *RootCommandShellSuite) Test_WhenNoCommandsAreProvided_ExpectShellExecutedWithoutError() {
+	outS, errS, err := s.tc.ExecuteShell([]string{})
 
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, "")
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, "")
 }
 
-func (s *RootCommandShellSuite) TestRootCommandShell_WhenExecuteInvalidStatement_ExpectError() {
-	result, err := s.tc.ExecuteShell([]string{"SELECTT 1;"})
-
+func (s *RootCommandShellSuite) Test_WhenExecuteInvalidStatement_ExpectError() {
+	outS, errS, err := s.tc.ExecuteShell([]string{"SELECTT 1;"})
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, "Error: near \"SELECTT\": syntax error")
+
+	s.tc.Assert(outS, qt.Equals, "")
+	s.tc.Assert(errS, qt.Equals, "Error: near \"SELECTT\": syntax error")
 }
 
-func (s *RootCommandShellSuite) TestRootCommandShell_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands() {
-	result, err := s.tc.ExecuteShell([]string{lib.QUIT_COMMAND, "SELECT 1;"})
+func (s *RootCommandShellSuite) Test_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands() {
+	outS, errS, err := s.tc.ExecuteShell([]string{lib.QUIT_COMMAND, "SELECT 1;"})
 
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, "")
+	s.tc.Assert(errS, qt.Equals, "")
 }
 
 func TestRootCommandShellSuite_WhenDbIsSQLite(t *testing.T) {

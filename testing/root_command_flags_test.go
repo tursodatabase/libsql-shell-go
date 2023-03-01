@@ -15,7 +15,7 @@ func TestRootCommandFlags_WhenAllFlagsAreProvided_ExpectSQLStatementsExecutedWit
 	dbPath := c.TempDir() + `\test.sqlite`
 	rootCmd := cmd.NewRootCmd()
 
-	_, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);", dbPath)
+	_, _, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);", dbPath)
 
 	c.Assert(err, qt.IsNil)
 }
@@ -25,7 +25,7 @@ func TestRootCommandFlags_WhenDbIsMissing_ExpectErrorReturned(t *testing.T) {
 
 	rootCmd := cmd.NewRootCmd()
 
-	_, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);")
+	_, _, err := utils.Execute(t, rootCmd, "--exec", "CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT);")
 
 	c.Assert(err.Error(), qt.Equals, `accepts 1 arg(s), received 0`)
 }
@@ -34,7 +34,7 @@ func TestRootCommandFlags_GivenEmptyStatements_ExpectErrorReturned(t *testing.T)
 	dbPath := t.TempDir() + `\test.sqlite`
 	tc := utils.NewTestContext(t, dbPath)
 
-	_, err := tc.Execute("")
+	_, _, err := tc.Execute("")
 
 	tc.Assert(err.Error(), qt.IsNotNil)
 }
