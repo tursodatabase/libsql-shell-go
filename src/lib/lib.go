@@ -22,8 +22,6 @@ type Result struct {
 	Data        [][]interface{}
 }
 
-const COLUMN_SEPARATOR = "|"
-
 func NewDb(dbPath string) (*Db, error) {
 	var sqlDb *sql.DB
 	var err error
