@@ -125,7 +125,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenTableCotainingBlobField_
 
 	result, err := s.tc.Execute("SELECT * from alltypes")
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"T", "I", "R", "B"}, [][]interface{}{{"text", "99", "3.14", "0123456789abcdef"}}))
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"T", "I", "R", "B"}, [][]interface{}{{"text", "99", "3.14", "ASNFZ4mrze8"}}))
 }
 
 func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
