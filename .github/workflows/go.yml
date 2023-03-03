@@ -39,3 +39,5 @@ jobs:
 
       - name: Test
         run: go test -v ./...
+        env:
+          TEST_CONFIG_SKIP_TURSO_TESTS: 1
