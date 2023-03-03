@@ -1,10 +1,13 @@
 package lib
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/olekukonko/tablewriter"
@@ -106,7 +109,15 @@ func formatStruct(value reflect.Value) (string, error) {
 
 func formatSlice(value reflect.Value) (string, error) {
 	if value.Type().Elem().Kind() == reflect.Uint8 {
-		return fmt.Sprintf("%x", value.Interface()), nil
+		hexString := hex.EncodeToString(value.Bytes())
+		base64Str := strings.TrimRight(base64.StdEncoding.EncodeToString(value.Bytes()), "=")
+		sliceOfBytes := make([]byte, base64.StdEncoding.DecodedLen(len(hexString)))
+
+		_, err := base64.StdEncoding.Decode(sliceOfBytes, []byte(base64Str))
+		if err != nil {
+			return base64Str, nil
+		}
+		return hexString, nil
 	}
 
 	return "", fmt.Errorf("unsupported slice: %s", value.Type().Name())
