@@ -10,6 +10,25 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) error {
+	for _, result := range results {
+		if len(result.ColumnNames) != 0 {
+			if withoutHeader {
+				err := PrintTable(outF, nil, result.Data)
+				if err != nil {
+					return err
+				}
+			} else {
+				err := PrintTable(outF, result.ColumnNames, result.Data)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func PrintTable(outF io.Writer, header []string, data [][]interface{}) error {
 	table := tablewriter.NewWriter(outF)
 

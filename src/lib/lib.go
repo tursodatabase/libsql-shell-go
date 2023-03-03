@@ -90,25 +90,6 @@ func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer,
 	}
 }
 
-func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) error {
-	for _, result := range results {
-		if len(result.ColumnNames) != 0 {
-			if withoutHeader {
-				err := PrintTable(outF, nil, result.Data)
-				if err != nil {
-					return err
-				}
-			} else {
-				err := PrintTable(outF, result.ColumnNames, result.Data)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-	return nil
-}
-
 func (db *Db) executeStatement(statement string) (*Result, error) {
 	if strings.TrimSpace(statement) == "" {
 		return nil, nil
