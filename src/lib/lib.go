@@ -2,7 +2,6 @@ package lib
 
 import (
 	"database/sql"
-	"fmt"
 	"io"
 	"net/url"
 	"reflect"
@@ -19,7 +18,13 @@ type Db struct {
 }
 type Result struct {
 	ColumnNames []string
-	Data        [][]interface{}
+	RowCh       chan RowResult
+	Err         error
+}
+
+type RowResult struct {
+	Row []interface{}
+	Err error
 }
 
 func NewDb(dbPath string) (*Db, error) {
@@ -53,68 +58,78 @@ func (db *Db) Close() {
 	db.sqlDb.Close()
 }
 
-func (db *Db) ExecuteStatements(statementsString string) ([]Result, error) {
+func (db *Db) ExecuteStatements(statementsString string, resultCh chan Result) {
+	defer close(resultCh)
+
 	statements, err := sqlparser.SplitStatementToPieces(statementsString)
 	if err != nil {
-		return nil, err
+		resultCh <- Result{Err: err}
+		return
 	}
 
-	statementResults := make([]Result, 0, len(statements))
+	rowsEndedWithoutErrorCh := make(chan bool)
+	defer close(rowsEndedWithoutErrorCh)
+
 	for _, statement := range statements {
-		result, err := db.executeStatement(statement)
-		if err != nil {
-			if strings.Contains(err.Error(), "interactive transaction not allowed in HTTP queries") {
-				return nil, &TransactionNotSupportedError{}
-			}
-			return nil, err
-		}
+		result := db.executeStatement(statement, rowsEndedWithoutErrorCh)
+
 		if result != nil {
-			statementResults = append(statementResults, *result)
+			if result.Err != nil {
+				if strings.Contains(result.Err.Error(), "interactive transaction not allowed in HTTP queries") {
+					result.Err = &TransactionNotSupportedError{}
+				}
+				resultCh <- *result
+				return
+			}
+
+			resultCh <- *result
+			shouldContinue := <-rowsEndedWithoutErrorCh
+			if !shouldContinue {
+				return
+			}
 		}
 	}
-
-	return statementResults, nil
 }
 
 func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, errF io.Writer, withoutHeader bool) {
-	results, err := db.ExecuteStatements(statementsString)
-	if err != nil {
-		fmt.Fprintf(errF, "Error: %s\n", err.Error())
-		return
-	}
+	resultsCh := make(chan Result)
 
-	err = PrintStatementsResults(results, outF, withoutHeader)
-	if err != nil {
-		fmt.Fprintf(errF, "Error: %s\n", err.Error())
-		return
+	go db.ExecuteStatements(statementsString, resultsCh)
+
+	for result := range resultsCh {
+		if result.Err != nil {
+			PrintError(result.Err, errF)
+			return
+		}
+		err := PrintStatementsResult(result, outF, withoutHeader)
+		if err != nil {
+			PrintError(err, errF)
+			return
+		}
 	}
 }
 
-func (db *Db) executeStatement(statement string) (*Result, error) {
+func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bool) *Result {
 	if strings.TrimSpace(statement) == "" {
-		return nil, nil
+		return nil
 	}
 
 	rows, err := db.sqlDb.Query(statement)
 	if err != nil {
-		return nil, err
+		return &Result{Err: err}
 	}
-	defer rows.Close()
 
 	columnNames, err := getColumnNames(rows)
 	if err != nil {
-		return nil, err
+		return &Result{Err: err}
 	}
 
 	columnTypes, err := getColumnTypes(rows)
 	if err != nil {
-		return nil, err
+		return &Result{Err: err}
 	}
 
-	data := make([][]interface{}, 0)
-
 	columnNamesLen := len(columnNames)
-
 	columnPointers := make([]interface{}, columnNamesLen)
 	for i, t := range columnTypes {
 		if t.Kind() == reflect.Struct {
@@ -124,21 +139,30 @@ func (db *Db) executeStatement(statement string) (*Result, error) {
 		}
 	}
 
-	for rows.Next() {
-		err = rows.Scan(columnPointers...)
-		if err != nil {
-			return nil, err
-		}
+	rowCh := make(chan RowResult)
+	go func() {
+		defer rows.Close()
+		defer close(rowCh)
 
-		rowData := make([]interface{}, len(columnTypes))
-		for i, ptr := range columnPointers {
-			val := reflect.ValueOf(ptr).Elem()
-			rowData[i] = val.Interface()
-		}
-		data = append(data, rowData)
-	}
+		for rows.Next() {
+			err = rows.Scan(columnPointers...)
+			if err != nil {
+				rowCh <- RowResult{Err: err}
+				rowsEndedWithoutErrorCh <- false
+				return
+			}
 
-	return &Result{ColumnNames: columnNames, Data: data}, nil
+			rowData := make([]interface{}, len(columnTypes))
+			for i, ptr := range columnPointers {
+				val := reflect.ValueOf(ptr).Elem()
+				rowData[i] = val.Interface()
+			}
+			rowCh <- RowResult{Row: rowData}
+		}
+		rowsEndedWithoutErrorCh <- true
+	}()
+
+	return &Result{ColumnNames: columnNames, RowCh: rowCh}
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {

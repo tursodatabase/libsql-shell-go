@@ -12,28 +12,39 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) error {
-	for _, result := range results {
-		if len(result.ColumnNames) != 0 {
-			formattedData, err := formatData(result.Data)
-			if err != nil {
-				return err
-			}
-
-			if withoutHeader {
-				PrintTable(outF, nil, formattedData)
-			} else {
-				PrintTable(outF, result.ColumnNames, formattedData)
-			}
-		}
+func PrintStatementsResult(result Result, outF io.Writer, withoutHeader bool) error {
+	if len(result.ColumnNames) == 0 {
+		return nil
 	}
+
+	table := createTable(outF)
+	if !withoutHeader {
+		table.SetHeader(result.ColumnNames)
+	}
+
+	for row := range result.RowCh {
+		if row.Err != nil {
+			return row.Err
+		}
+		formattedRow, err := formatData(row.Row)
+
+		if err != nil {
+			return err
+		}
+		table.Append(formattedRow)
+	}
+
+	table.Render()
 	return nil
 }
 
-func PrintTable(outF io.Writer, header []string, data [][]string) {
+func PrintError(err error, errF io.Writer) {
+	fmt.Fprintf(errF, "Error: %s\n", err.Error())
+}
+
+func createTable(outF io.Writer) *tablewriter.Table {
 	table := tablewriter.NewWriter(outF)
 
-	table.SetHeader(header)
 	table.SetHeaderLine(false)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAutoFormatHeaders(true)
@@ -45,25 +56,26 @@ func PrintTable(outF io.Writer, header []string, data [][]string) {
 	table.SetNoWhiteSpace(true)
 	table.SetTablePadding("     ")
 
-	table.AppendBulk(data)
+	return table
+}
 
+func PrintTable(outF io.Writer, header []string, data [][]string) {
+	table := createTable(outF)
+	table.SetHeader(header)
+	table.AppendBulk(data)
 	table.Render()
 }
 
-func formatData(data [][]interface{}) ([][]string, error) {
-	formattedData := make([][]string, len(data))
-	for i, row := range data {
-		formattedRow := make([]string, len(row))
-		for j, val := range row {
-			result, err := formatValue(val)
-			if err != nil {
-				return nil, err
-			}
-			formattedRow[j] = result
+func formatData(row []interface{}) ([]string, error) {
+	formattedRow := make([]string, len(row))
+	for j, val := range row {
+		result, err := formatValue(val)
+		if err != nil {
+			return nil, err
 		}
-		formattedData[i] = formattedRow
+		formattedRow[j] = result
 	}
-	return formattedData, nil
+	return formattedRow, nil
 }
 
 func formatValue(val interface{}) (string, error) {
