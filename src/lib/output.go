@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -75,6 +77,8 @@ func formatValue(val interface{}) (string, error) {
 			return formatStruct(rv)
 		case reflect.Slice:
 			return formatSlice(rv)
+		case reflect.Map:
+			return formatMap(rv)
 		default:
 			formattedRawType, err := formatRawTypes(rv)
 			if err != nil {
@@ -118,10 +122,45 @@ func formatStruct(value reflect.Value) (string, error) {
 
 func formatSlice(value reflect.Value) (string, error) {
 	if value.Type().Elem().Kind() == reflect.Uint8 {
-		return fmt.Sprintf("%x", value.Interface()), nil
+		return formatBytes(value.Interface().([]byte)), nil
 	}
 
 	return "", fmt.Errorf("unsupported slice: %s", value.Type().Name())
+}
+
+func formatMap(value reflect.Value) (string, error) {
+	base64Value := value.MapIndex(reflect.ValueOf("base64"))
+	if base64Value.IsZero() {
+		return "", fmt.Errorf("unsupported map: no \"base64\" field")
+	}
+
+	var base64ValueString string
+	switch {
+	case base64Value.Kind() == reflect.Interface && base64Value.Elem().Kind() == reflect.String:
+		base64ValueString = base64Value.Elem().String()
+	case base64Value.Kind() == reflect.String:
+		base64ValueString = base64Value.String()
+	default:
+		return "", fmt.Errorf("unsupported map. unsupported \"base64\" field kind")
+	}
+
+	return decodeBase64ToHex(base64ValueString)
+}
+
+func decodeBase64ToHex(base64String string) (string, error) {
+	encodingWithNoPadding := base64.StdEncoding.WithPadding(base64.NoPadding)
+
+	decodedBase64 := make([]byte, encodingWithNoPadding.DecodedLen(len(base64String)))
+	_, err := encodingWithNoPadding.Decode(decodedBase64, []byte(base64String))
+	if err != nil {
+		return "", errors.Join(errors.New("unable to decode base64 value"), err)
+	}
+
+	return formatBytes(decodedBase64), nil
+}
+
+func formatBytes(bytes []byte) string {
+	return fmt.Sprintf("%x", bytes)
 }
 
 func formatRawTypes(value reflect.Value) (string, error) {
