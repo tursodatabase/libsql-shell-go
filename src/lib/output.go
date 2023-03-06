@@ -13,29 +13,24 @@ import (
 func PrintStatementsResults(results []Result, outF io.Writer, withoutHeader bool) error {
 	for _, result := range results {
 		if len(result.ColumnNames) != 0 {
+			formattedData, err := formatData(result.Data)
+			if err != nil {
+				return err
+			}
+
 			if withoutHeader {
-				err := PrintTable(outF, nil, result.Data)
-				if err != nil {
-					return err
-				}
+				PrintTable(outF, nil, formattedData)
 			} else {
-				err := PrintTable(outF, result.ColumnNames, result.Data)
-				if err != nil {
-					return err
-				}
+				PrintTable(outF, result.ColumnNames, formattedData)
 			}
 		}
 	}
 	return nil
 }
 
-func PrintTable(outF io.Writer, header []string, data [][]interface{}) error {
+func PrintTable(outF io.Writer, header []string, data [][]string) {
 	table := tablewriter.NewWriter(outF)
 
-	formattedData, err := formatData(data)
-	if err != nil {
-		return err
-	}
 	table.SetHeader(header)
 	table.SetHeaderLine(false)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
@@ -48,11 +43,9 @@ func PrintTable(outF io.Writer, header []string, data [][]interface{}) error {
 	table.SetNoWhiteSpace(true)
 	table.SetTablePadding("     ")
 
-	table.AppendBulk(formattedData)
+	table.AppendBulk(data)
 
 	table.Render()
-
-	return nil
 }
 
 func formatData(data [][]interface{}) ([][]string, error) {
