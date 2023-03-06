@@ -65,6 +65,17 @@ func (s *RootCommandShellSuite) TestRootCommandShell_WhenTypingQuitCommand_Expec
 	s.tc.Assert(result, qt.Equals, "")
 }
 
+func (s *RootCommandShellSuite) TestRootCommandShell_WhenSplittingStatementsIntoMultipleLine_ExpectMergeLinesBeforeExecuting() {
+	s.tc.CreateSimpleTable("simple_table", []utils.SimpleTableEntry{{TextField: "value1", IntField: 1}})
+
+	result, err := s.tc.ExecuteShell([]string{"SELECT", "*", "FROM", "simple_table;"})
+	s.tc.Assert(err, qt.IsNil)
+
+	s.tc.Assert(result, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "value1", "1"}}))
+
+	s.tc.Assert(err, qt.IsNil)
+}
+
 func TestRootCommandShellSuite_WhenDbIsSQLite(t *testing.T) {
 	suite.Run(t, NewRootCommandShellSuite(t.TempDir()+"test.sqlite"))
 }

@@ -11,6 +11,9 @@ import (
 const QUIT_COMMAND = ".quit"
 const WELCOME_MESSAGE = "Welcome to LibSQL shell!\n\nType \".quit\" to exit the shell, \".tables\" to list all tables, and \".schema\" to show table schemas.\n\n"
 
+const promptNewStatement = "→  "
+const promptContinueStatement = "... "
+
 type ShellConfig struct {
 	InF         io.Reader
 	OutF        io.Writer
@@ -21,7 +24,7 @@ type ShellConfig struct {
 
 func NewReadline(config *ShellConfig) (*readline.Instance, error) {
 	return readline.NewEx(&readline.Config{
-		Prompt:          "→  ",
+		Prompt:          promptNewStatement,
 		InterruptPrompt: "^C",
 		HistoryFile:     config.HistoryFile,
 		EOFPrompt:       QUIT_COMMAND,
@@ -43,6 +46,8 @@ func (db *Db) RunShell(config *ShellConfig) error {
 		fmt.Print(WELCOME_MESSAGE)
 	}
 
+	statementContext := statementContext{readLineInstance: l, db: db}
+
 	for {
 		line, err := l.Readline()
 
@@ -61,12 +66,14 @@ func (db *Db) RunShell(config *ShellConfig) error {
 		switch {
 		case len(line) == 0:
 			continue
+		case statementContext.insideMultilineStatement:
+			statementContext.appendStatementPartAndExecuteIfFinished(line)
 		case line == QUIT_COMMAND:
 			return nil
 		case isCommand(line):
 			db.executeCommand(line, config)
 		default:
-			db.ExecuteAndPrintStatements(line, l.Stdout(), l.Stderr(), false)
+			statementContext.appendStatementPartAndExecuteIfFinished(line)
 		}
 
 	}
@@ -99,5 +106,26 @@ func (db *Db) executeCommand(command string, config *ShellConfig) {
 		db.ExecuteAndPrintStatements(statement, config.OutF, config.ErrF, true)
 	} else {
 		fmt.Println("Unknown command")
+	}
+}
+
+type statementContext struct {
+	readLineInstance         *readline.Instance
+	db                       *Db
+	statementParts           []string
+	insideMultilineStatement bool
+}
+
+func (sC *statementContext) appendStatementPartAndExecuteIfFinished(statementPart string) {
+	sC.statementParts = append(sC.statementParts, statementPart)
+	if strings.HasSuffix(statementPart, ";") {
+		completeStatement := strings.Join(sC.statementParts, "\n")
+		sC.statementParts = make([]string, 0)
+		sC.insideMultilineStatement = false
+		sC.readLineInstance.SetPrompt(promptNewStatement)
+		sC.db.ExecuteAndPrintStatements(completeStatement, sC.readLineInstance.Stdout(), sC.readLineInstance.Stderr(), false)
+	} else {
+		sC.readLineInstance.SetPrompt(promptContinueStatement)
+		sC.insideMultilineStatement = false
 	}
 }
