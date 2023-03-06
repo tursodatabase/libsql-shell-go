@@ -160,7 +160,7 @@ func decodeBase64ToHex(base64String string) (string, error) {
 }
 
 func formatBytes(bytes []byte) string {
-	return fmt.Sprintf("%x", bytes)
+	return fmt.Sprintf("0x%X", bytes)
 }
 
 func formatRawTypes(value reflect.Value) (string, error) {
