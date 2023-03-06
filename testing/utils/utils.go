@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -34,13 +33,10 @@ func ExecuteWithInitialInput(t *testing.T, c *cobra.Command, initialInput string
 	return strings.TrimSpace(buf.String()), err
 }
 
-func GetPrintTableOutput(header []string, data [][]interface{}) string {
+func GetPrintTableOutput(header []string, data [][]string) string {
 	buf := new(bytes.Buffer)
 
-	err := lib.PrintTable(buf, header, data)
-	if err != nil {
-		return strings.TrimSpace(fmt.Sprintf("%v", err))
-	}
+	lib.PrintTable(buf, header, data)
 
 	return strings.TrimSpace(buf.String())
 }
