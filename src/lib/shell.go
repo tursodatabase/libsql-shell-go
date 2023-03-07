@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/fatih/color"
 )
 
 const QUIT_COMMAND = ".quit"
@@ -26,7 +27,8 @@ type ShellConfig struct {
 type shell struct {
 	config ShellConfig
 
-	db *Db
+	db        *Db
+	promptFmt func(p ...interface{}) string
 
 	readline                 *readline.Instance
 	statementParts           []string
@@ -42,12 +44,13 @@ func (db *Db) RunShell(config ShellConfig) error {
 }
 
 func newShell(config ShellConfig, db *Db) (*shell, error) {
-	return &shell{config: config, db: db}, nil
+	promptFmt := color.New(color.FgBlue, color.Bold).SprintFunc()
+	return &shell{config: config, db: db, promptFmt: promptFmt}, nil
 }
 
 func (sh *shell) run() error {
 	var err error
-	sh.readline, err = newReadline(&sh.config)
+	sh.readline, err = sh.newReadline()
 	if err != nil {
 		return err
 	}
@@ -90,15 +93,15 @@ func (sh *shell) run() error {
 	return nil
 }
 
-func newReadline(config *ShellConfig) (*readline.Instance, error) {
+func (sh *shell) newReadline() (*readline.Instance, error) {
 	return readline.NewEx(&readline.Config{
-		Prompt:          promptNewStatement,
+		Prompt:          sh.promptFmt(promptNewStatement),
 		InterruptPrompt: "^C",
-		HistoryFile:     config.HistoryFile,
+		HistoryFile:     sh.config.HistoryFile,
 		EOFPrompt:       QUIT_COMMAND,
-		Stdin:           io.NopCloser(config.InF),
-		Stdout:          config.OutF,
-		Stderr:          config.ErrF,
+		Stdin:           io.NopCloser(sh.config.InF),
+		Stdout:          sh.config.OutF,
+		Stderr:          sh.config.ErrF,
 	})
 }
 
@@ -137,10 +140,10 @@ func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 		completeStatement := strings.Join(sh.statementParts, "\n")
 		sh.statementParts = make([]string, 0)
 		sh.insideMultilineStatement = false
-		sh.readline.SetPrompt(promptNewStatement)
+		sh.readline.SetPrompt(sh.promptFmt(promptNewStatement))
 		sh.db.ExecuteAndPrintStatements(completeStatement, sh.readline.Stdout(), sh.readline.Stderr(), false)
 	} else {
-		sh.readline.SetPrompt(promptContinueStatement)
+		sh.readline.SetPrompt(sh.promptFmt(promptContinueStatement))
 		sh.insideMultilineStatement = false
 	}
 }
