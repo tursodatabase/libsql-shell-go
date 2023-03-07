@@ -3,10 +3,12 @@ package lib
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
+	"github.com/spf13/cobra"
 )
 
 const QUIT_COMMAND = ".quit"
@@ -61,6 +63,14 @@ func (sh *shell) run() error {
 		fmt.Print(sh.getWelcomeMessage())
 	}
 
+	dbCmdConfig := &dbCmdConfig{
+		db:   sh.db,
+		OutF: sh.config.OutF,
+		ErrF: sh.config.ErrF,
+	}
+
+	databaseCmd := CreateNewDatabaseRootCmd(dbCmdConfig)
+
 	for {
 		line, err := sh.readline.Readline()
 
@@ -84,7 +94,16 @@ func (sh *shell) run() error {
 		case line == QUIT_COMMAND:
 			return nil
 		case isCommand(line):
-			sh.executeCommand(line)
+			err = sh.executeCommand(databaseCmd, line)
+			if err != nil {
+				rx := regexp.MustCompile(`"[^"]*"`)
+				command := rx.FindString(fmt.Sprint(err))
+				if command == "" {
+					PrintError(fmt.Errorf("unknown command or invalid arguments."), dbCmdConfig.ErrF)
+				}
+				errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s.`, command)
+				PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
+			}
 		default:
 			sh.appendStatementPartAndExecuteIfFinished(line)
 		}
@@ -109,29 +128,15 @@ func isCommand(line string) bool {
 	return line[0] == '.'
 }
 
-var sqlAliasCommands = map[string]string{
-	".tables": `select name from sqlite_schema
-		where type = 'table'
-		and name not like 'sqlite_%'
-		and name != '_litestream_seq'
-		and name != '_litestream_lock'
-		and name != 'libsql_wasm_func_table'
-		order by name`,
-	".schema": `select sql from sqlite_schema
-		where name not like 'sqlite_%'
-		and name != '_litestream_seq'
-		and name != '_litestream_lock'
-		and name != 'libsql_wasm_func_table'
-		order by name`,
-}
+func (sh *shell) executeCommand(databaseCmd *cobra.Command, command string) error {
+	parts := strings.Fields(command)
+	databaseCmd.SetArgs(parts)
 
-func (sh *shell) executeCommand(command string) {
-	statement, isSqlAliasCommands := sqlAliasCommands[command]
-	if isSqlAliasCommands {
-		sh.db.ExecuteAndPrintStatements(statement, sh.config.OutF, sh.config.ErrF, true)
-	} else {
-		fmt.Println("Unknown command")
+	err := databaseCmd.Execute()
+	if err != nil {
+		return err
 	}
+	return nil
 }
 
 func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
