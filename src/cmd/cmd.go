@@ -60,7 +60,7 @@ func NewRootCmd() *cobra.Command {
 				QuietMode:   rootArgs.quiet,
 			}
 
-			return db.RunShell(&shellConfig)
+			return db.RunShell(shellConfig)
 		},
 	}
 
