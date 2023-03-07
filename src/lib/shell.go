@@ -22,34 +22,43 @@ type ShellConfig struct {
 	QuietMode   bool
 }
 
-func NewReadline(config *ShellConfig) (*readline.Instance, error) {
-	return readline.NewEx(&readline.Config{
-		Prompt:          promptNewStatement,
-		InterruptPrompt: "^C",
-		HistoryFile:     config.HistoryFile,
-		EOFPrompt:       QUIT_COMMAND,
-		Stdin:           io.NopCloser(config.InF),
-		Stdout:          config.OutF,
-		Stderr:          config.ErrF,
-	})
+type shell struct {
+	config ShellConfig
+
+	db *Db
+
+	readline                 *readline.Instance
+	statementParts           []string
+	insideMultilineStatement bool
 }
 
-func (db *Db) RunShell(config *ShellConfig) error {
-	l, err := NewReadline(config)
+func (db *Db) RunShell(config ShellConfig) error {
+	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
 	}
-	defer l.Close()
-	l.CaptureExitSignal()
+	return shellInstance.run()
+}
 
-	if !config.QuietMode {
+func newShell(config ShellConfig, db *Db) (*shell, error) {
+	return &shell{config: config, db: db}, nil
+}
+
+func (sh *shell) run() error {
+	var err error
+	sh.readline, err = newReadline(&sh.config)
+	if err != nil {
+		return err
+	}
+	defer sh.readline.Close()
+	sh.readline.CaptureExitSignal()
+
+	if !sh.config.QuietMode {
 		fmt.Print(WELCOME_MESSAGE)
 	}
 
-	statementContext := statementContext{readLineInstance: l, db: db}
-
 	for {
-		line, err := l.Readline()
+		line, err := sh.readline.Readline()
 
 		if err == readline.ErrInterrupt {
 			if len(line) == 0 {
@@ -66,18 +75,30 @@ func (db *Db) RunShell(config *ShellConfig) error {
 		switch {
 		case len(line) == 0:
 			continue
-		case statementContext.insideMultilineStatement:
-			statementContext.appendStatementPartAndExecuteIfFinished(line)
+		case sh.insideMultilineStatement:
+			sh.appendStatementPartAndExecuteIfFinished(line)
 		case line == QUIT_COMMAND:
 			return nil
 		case isCommand(line):
-			db.executeCommand(line, config)
+			sh.executeCommand(line)
 		default:
-			statementContext.appendStatementPartAndExecuteIfFinished(line)
+			sh.appendStatementPartAndExecuteIfFinished(line)
 		}
 
 	}
 	return nil
+}
+
+func newReadline(config *ShellConfig) (*readline.Instance, error) {
+	return readline.NewEx(&readline.Config{
+		Prompt:          promptNewStatement,
+		InterruptPrompt: "^C",
+		HistoryFile:     config.HistoryFile,
+		EOFPrompt:       QUIT_COMMAND,
+		Stdin:           io.NopCloser(config.InF),
+		Stdout:          config.OutF,
+		Stderr:          config.ErrF,
+	})
 }
 
 func isCommand(line string) bool {
@@ -100,32 +121,25 @@ var sqlAliasCommands = map[string]string{
 		order by name`,
 }
 
-func (db *Db) executeCommand(command string, config *ShellConfig) {
+func (sh *shell) executeCommand(command string) {
 	statement, isSqlAliasCommands := sqlAliasCommands[command]
 	if isSqlAliasCommands {
-		db.ExecuteAndPrintStatements(statement, config.OutF, config.ErrF, true)
+		sh.db.ExecuteAndPrintStatements(statement, sh.config.OutF, sh.config.ErrF, true)
 	} else {
 		fmt.Println("Unknown command")
 	}
 }
 
-type statementContext struct {
-	readLineInstance         *readline.Instance
-	db                       *Db
-	statementParts           []string
-	insideMultilineStatement bool
-}
-
-func (sC *statementContext) appendStatementPartAndExecuteIfFinished(statementPart string) {
-	sC.statementParts = append(sC.statementParts, statementPart)
+func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
+	sh.statementParts = append(sh.statementParts, statementPart)
 	if strings.HasSuffix(statementPart, ";") {
-		completeStatement := strings.Join(sC.statementParts, "\n")
-		sC.statementParts = make([]string, 0)
-		sC.insideMultilineStatement = false
-		sC.readLineInstance.SetPrompt(promptNewStatement)
-		sC.db.ExecuteAndPrintStatements(completeStatement, sC.readLineInstance.Stdout(), sC.readLineInstance.Stderr(), false)
+		completeStatement := strings.Join(sh.statementParts, "\n")
+		sh.statementParts = make([]string, 0)
+		sh.insideMultilineStatement = false
+		sh.readline.SetPrompt(promptNewStatement)
+		sh.db.ExecuteAndPrintStatements(completeStatement, sh.readline.Stdout(), sh.readline.Stderr(), false)
 	} else {
-		sC.readLineInstance.SetPrompt(promptContinueStatement)
-		sC.insideMultilineStatement = false
+		sh.readline.SetPrompt(promptContinueStatement)
+		sh.insideMultilineStatement = false
 	}
 }
