@@ -9,17 +9,18 @@ import (
 )
 
 const QUIT_COMMAND = ".quit"
-const WELCOME_MESSAGE = "Welcome to LibSQL shell!\n\nType \".quit\" to exit the shell, \".tables\" to list all tables, and \".schema\" to show table schemas.\n\n"
+const DEFAULT_WELCOME_MESSAGE = "Welcome to LibSQL shell!\n\nType \".quit\" to exit the shell, \".tables\" to list all tables, and \".schema\" to show table schemas.\n\n"
 
 const promptNewStatement = "→  "
 const promptContinueStatement = "... "
 
 type ShellConfig struct {
-	InF         io.Reader
-	OutF        io.Writer
-	ErrF        io.Writer
-	HistoryFile string
-	QuietMode   bool
+	InF            io.Reader
+	OutF           io.Writer
+	ErrF           io.Writer
+	HistoryFile    string
+	QuietMode      bool
+	WelcomeMessage *string
 }
 
 type shell struct {
@@ -54,7 +55,7 @@ func (sh *shell) run() error {
 	sh.readline.CaptureExitSignal()
 
 	if !sh.config.QuietMode {
-		fmt.Print(WELCOME_MESSAGE)
+		fmt.Print(sh.getWelcomeMessage())
 	}
 
 	for {
@@ -142,4 +143,11 @@ func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 		sh.readline.SetPrompt(promptContinueStatement)
 		sh.insideMultilineStatement = false
 	}
+}
+
+func (sh *shell) getWelcomeMessage() string {
+	if sh.config.WelcomeMessage == nil {
+		return DEFAULT_WELCOME_MESSAGE
+	}
+	return *sh.config.WelcomeMessage
 }
