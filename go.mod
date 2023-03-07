@@ -3,6 +3,7 @@ module github.com/chiselstrike/libsql-shell
 go 1.20
 
 require (
+	github.com/fatih/color v1.14.1
 	github.com/frankban/quicktest v1.14.4
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/knadh/koanf/parsers/yaml v0.1.0
@@ -22,6 +23,8 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
