@@ -72,12 +72,8 @@ func (tc *DbTestContext) getAllTables() []string {
 	return strings.Split(result, "\n")
 }
 
-func (tc *DbTestContext) dropAllTables() {
+func (tc *DbTestContext) DropAllTables() {
 	for _, createdTable := range tc.getAllTables() {
 		tc.DropTable(createdTable)
 	}
-}
-
-func (tc *DbTestContext) TearDown() {
-	tc.dropAllTables()
 }
