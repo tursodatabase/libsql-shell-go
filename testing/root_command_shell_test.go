@@ -13,7 +13,6 @@ import (
 type RootCommandShellSuite struct {
 	suite.Suite
 
-	// dbInTest utils.DbType
 	dbPath string
 	tc     *utils.DbTestContext
 }
@@ -22,12 +21,13 @@ func NewRootCommandShellSuite(dbPath string) *RootCommandShellSuite {
 	return &RootCommandShellSuite{dbPath: dbPath}
 }
 
-func (s *RootCommandShellSuite) SetupTest() {
+func (s *RootCommandShellSuite) SetupSuite() {
 	s.tc = utils.NewTestContext(s.T(), s.dbPath)
+	s.tc.DropAllTables()
 }
 
 func (s *RootCommandShellSuite) TearDownTest() {
-	s.tc.TearDown()
+	s.tc.DropAllTables()
 }
 
 func (s *RootCommandShellSuite) Test_WhenCreateTable_ExpectDbHaveTheTable() {

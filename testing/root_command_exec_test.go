@@ -13,7 +13,6 @@ import (
 type RootCommandExecSuite struct {
 	suite.Suite
 
-	// dbInTest utils.DbType
 	dbPath string
 	tc     *utils.DbTestContext
 }
@@ -22,12 +21,13 @@ func NewRootCommandExecSuite(dbPath string) *RootCommandExecSuite {
 	return &RootCommandExecSuite{dbPath: dbPath}
 }
 
-func (s *RootCommandExecSuite) SetupTest() {
+func (s *RootCommandExecSuite) SetupSuite() {
 	s.tc = utils.NewTestContext(s.T(), s.dbPath)
+	s.tc.DropAllTables()
 }
 
 func (s *RootCommandExecSuite) TearDownTest() {
-	s.tc.TearDown()
+	s.tc.DropAllTables()
 }
 
 func (s *RootCommandExecSuite) Test_GivenEmptyDb_WhenCreateTable_ExpectEmptyResult() {
