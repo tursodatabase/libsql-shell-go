@@ -13,6 +13,10 @@ import (
 )
 
 func PrintStatementsResult(statementsResult statementsResult, outF io.Writer, withoutHeader bool) error {
+	if statementsResult.StatementResultCh == nil {
+		return &InvalidStatementsResult{}
+	}
+
 	for statementResult := range statementsResult.StatementResultCh {
 		if statementResult.Err != nil {
 			return statementResult.Err
@@ -27,6 +31,10 @@ func PrintStatementsResult(statementsResult statementsResult, outF io.Writer, wi
 }
 
 func PrintStatementResult(statementResult statementResult, outF io.Writer, withoutHeader bool) error {
+	if statementResult.RowCh == nil {
+		return &UnableToPrintStatementResult{}
+	}
+
 	if len(statementResult.ColumnNames) == 0 {
 		return nil
 	}
