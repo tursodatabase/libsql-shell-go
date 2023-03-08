@@ -16,13 +16,18 @@ import (
 type Db struct {
 	sqlDb *sql.DB
 }
-type Result struct {
+
+type statementsResult struct {
+	StatementResultCh chan statementResult
+}
+
+type statementResult struct {
 	ColumnNames []string
-	RowCh       chan RowResult
+	RowCh       chan rowResult
 	Err         error
 }
 
-type RowResult struct {
+type rowResult struct {
 	Row []interface{}
 	Err error
 }
@@ -58,75 +63,82 @@ func (db *Db) Close() {
 	db.sqlDb.Close()
 }
 
-func (db *Db) ExecuteStatements(statementsString string, resultCh chan Result) {
-	defer close(resultCh)
+func (db *Db) ExecuteStatements(statementsString string) (statementsResult, error) {
 
 	statements, err := sqlparser.SplitStatementToPieces(statementsString)
 	if err != nil {
-		resultCh <- Result{Err: err}
-		return
+		return statementsResult{}, err
 	}
 
+	statementResultCh := make(chan statementResult)
+
+	go func() {
+		defer close(statementResultCh)
+		db.executeStatementsAndPopulateChannel(statements, statementResultCh)
+	}()
+
+	return statementsResult{StatementResultCh: statementResultCh}, nil
+}
+
+func (db *Db) executeStatementsAndPopulateChannel(statements []string, statementResultCh chan statementResult) {
 	rowsEndedWithoutErrorCh := make(chan bool)
 	defer close(rowsEndedWithoutErrorCh)
 
 	for _, statement := range statements {
 		result := db.executeStatement(statement, rowsEndedWithoutErrorCh)
 
-		if result != nil {
-			if result.Err != nil {
-				if strings.Contains(result.Err.Error(), "interactive transaction not allowed in HTTP queries") {
-					result.Err = &TransactionNotSupportedError{}
-				}
-				resultCh <- *result
-				return
-			}
+		if result == nil {
+			continue
+		}
 
-			resultCh <- *result
-			shouldContinue := <-rowsEndedWithoutErrorCh
-			if !shouldContinue {
-				return
+		if result.Err != nil {
+			if strings.Contains(result.Err.Error(), "interactive transaction not allowed in HTTP queries") {
+				result.Err = &TransactionNotSupportedError{}
 			}
+			statementResultCh <- *result
+			return
+		}
+
+		statementResultCh <- *result
+		shouldContinue := <-rowsEndedWithoutErrorCh
+		if !shouldContinue {
+			return
 		}
 	}
 }
 
 func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, errF io.Writer, withoutHeader bool) {
-	resultsCh := make(chan Result)
+	result, err := db.ExecuteStatements(statementsString)
+	if err != nil {
+		PrintError(err, errF)
+		return
+	}
 
-	go db.ExecuteStatements(statementsString, resultsCh)
-
-	for result := range resultsCh {
-		if result.Err != nil {
-			PrintError(result.Err, errF)
-			return
-		}
-		err := PrintStatementsResult(result, outF, withoutHeader)
-		if err != nil {
-			PrintError(err, errF)
-			return
-		}
+	err = PrintStatementsResult(result, outF, withoutHeader)
+	if err != nil {
+		PrintError(err, errF)
+		return
 	}
 }
 
-func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bool) *Result {
+func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bool) *statementResult {
 	if strings.TrimSpace(statement) == "" {
 		return nil
 	}
 
 	rows, err := db.sqlDb.Query(statement)
 	if err != nil {
-		return &Result{Err: err}
+		return &statementResult{Err: err}
 	}
 
 	columnNames, err := getColumnNames(rows)
 	if err != nil {
-		return &Result{Err: err}
+		return &statementResult{Err: err}
 	}
 
 	columnTypes, err := getColumnTypes(rows)
 	if err != nil {
-		return &Result{Err: err}
+		return &statementResult{Err: err}
 	}
 
 	columnNamesLen := len(columnNames)
@@ -139,7 +151,7 @@ func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bo
 		}
 	}
 
-	rowCh := make(chan RowResult)
+	rowCh := make(chan rowResult)
 	go func() {
 		defer rows.Close()
 		defer close(rowCh)
@@ -147,7 +159,7 @@ func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bo
 		for rows.Next() {
 			err = rows.Scan(columnPointers...)
 			if err != nil {
-				rowCh <- RowResult{Err: err}
+				rowCh <- rowResult{Err: err}
 				rowsEndedWithoutErrorCh <- false
 				return
 			}
@@ -157,12 +169,12 @@ func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bo
 				val := reflect.ValueOf(ptr).Elem()
 				rowData[i] = val.Interface()
 			}
-			rowCh <- RowResult{Row: rowData}
+			rowCh <- rowResult{Row: rowData}
 		}
 		rowsEndedWithoutErrorCh <- true
 	}()
 
-	return &Result{ColumnNames: columnNames, RowCh: rowCh}
+	return &statementResult{ColumnNames: columnNames, RowCh: rowCh}
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {

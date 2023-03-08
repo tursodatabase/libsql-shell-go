@@ -35,20 +35,16 @@ func NewRootCmd() *cobra.Command {
 					return fmt.Errorf("no SQL command to execute")
 				}
 
-				resultsCh := make(chan lib.Result)
-
-				go db.ExecuteStatements(rootArgs.statements, resultsCh)
-
-				for result := range resultsCh {
-					if result.Err != nil {
-						return result.Err
-					}
-
-					err := lib.PrintStatementsResult(result, cmd.OutOrStdout(), false)
-					if err != nil {
-						return err
-					}
+				result, err := db.ExecuteStatements(rootArgs.statements)
+				if err != nil {
+					return err
 				}
+
+				err = lib.PrintStatementsResult(result, cmd.OutOrStdout(), false)
+				if err != nil {
+					return err
+				}
+
 				return nil
 			}
 
