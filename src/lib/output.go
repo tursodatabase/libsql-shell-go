@@ -12,17 +12,31 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func PrintStatementsResult(result Result, outF io.Writer, withoutHeader bool) error {
-	if len(result.ColumnNames) == 0 {
+func PrintStatementsResult(statementsResult statementsResult, outF io.Writer, withoutHeader bool) error {
+	for statementResult := range statementsResult.StatementResultCh {
+		if statementResult.Err != nil {
+			return statementResult.Err
+		}
+
+		err := PrintStatementResult(statementResult, outF, withoutHeader)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func PrintStatementResult(statementResult statementResult, outF io.Writer, withoutHeader bool) error {
+	if len(statementResult.ColumnNames) == 0 {
 		return nil
 	}
 
 	table := createTable(outF)
 	if !withoutHeader {
-		table.SetHeader(result.ColumnNames)
+		table.SetHeader(statementResult.ColumnNames)
 	}
 
-	for row := range result.RowCh {
+	for row := range statementResult.RowCh {
 		if row.Err != nil {
 			return row.Err
 		}
