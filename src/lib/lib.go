@@ -171,6 +171,13 @@ func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bo
 			}
 			rowCh <- rowResult{Row: rowData}
 		}
+
+		if err := rows.Err(); err != nil {
+			rowCh <- rowResult{Err: err}
+			rowsEndedWithoutErrorCh <- false
+			return
+		}
+
 		rowsEndedWithoutErrorCh <- true
 	}()
 
