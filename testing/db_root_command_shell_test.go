@@ -49,6 +49,13 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCo
 	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE another_simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)\nCREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
 }
 
+func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAllAvailableCommands() {
+	outSchema, errS, err := s.tc.ExecuteShell([]string{".help"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outSchema, qt.Equals, ".help       List of all available commands.\n  .schema     Show table schemas.\n  .tables     List all existing tables in the database.\n  .quit       Exit this program.")
+}
+
 func (s *DBRootCommandShellSuite) Test_WhenCallACommandThatDoesNotExist_ExpectToReturnAnErrorMessage() {
 	outS, errS, err := s.tc.ExecuteShell([]string{".nonExistingCommand"})
 	s.tc.Assert(err, qt.IsNil)
