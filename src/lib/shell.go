@@ -99,9 +99,9 @@ func (sh *shell) run() error {
 				rx := regexp.MustCompile(`"[^"]*"`)
 				command := rx.FindString(fmt.Sprint(err))
 				if command == "" {
-					PrintError(fmt.Errorf("unknown command or invalid arguments."), dbCmdConfig.ErrF)
+					PrintError(fmt.Errorf(`unknown command or invalid arguments. Enter ".help" for help`), dbCmdConfig.ErrF)
 				}
-				errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s.`, command)
+				errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
 				PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
 			}
 		default:

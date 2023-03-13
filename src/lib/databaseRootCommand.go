@@ -16,11 +16,18 @@ type dbCmdConfig struct {
 	db   *Db
 }
 
+const helpTemplate = `{{range .Commands}}{{if (and (not .Hidden) (or .IsAvailableCommand) (ne .Name "completion"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}
+  {{rpad ".quit" .NamePadding }} Exit this program.
+`
+
 func NewDatabaseRootCmd(config *dbCmdConfig) *cobra.Command {
 	var rootCmd = &cobra.Command{
-		SilenceErrors: true,
-		Short:         "Database manager cli",
-		Example:       ".tables to list tables\n.schema to list schemas",
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		DisableSuggestions: true,
+		Short:              "Database manager cli",
+		Example:            ".tables to list tables\n.schema to list schemas",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			ctx := context.WithValue(cmd.Context(), dbCtx{}, config)
 			cmd.SetContext(ctx)
@@ -29,7 +36,10 @@ func NewDatabaseRootCmd(config *dbCmdConfig) *cobra.Command {
 
 	rootCmd.AddCommand(tableCmd)
 	rootCmd.AddCommand(schemaCmd)
-	rootCmd.DisableSuggestions = true
+	rootCmd.AddCommand(helpCmd)
+	rootCmd.SetOut(config.OutF)
+	rootCmd.SetErr(config.ErrF)
+	rootCmd.SetHelpTemplate(helpTemplate)
 	return rootCmd
 }
 
