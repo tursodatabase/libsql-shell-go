@@ -52,7 +52,7 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCo
 func (s *DBRootCommandShellSuite) Test_WhenCallACommandThatDoesNotExist_ExpectToReturnAnErrorMessage() {
 	outS, errS, err := s.tc.ExecuteShell([]string{".nonExistingCommand"})
 	s.tc.Assert(err, qt.IsNil)
-	s.tc.Assert(errS, qt.Equals, `Error: unknown command or invalid arguments: ".nonExistingCommand".`)
+	s.tc.Assert(errS, qt.Equals, `Error: unknown command or invalid arguments: ".nonExistingCommand". Enter ".help" for help`)
 	s.tc.Assert(outS, qt.Equals, "")
 }
 
