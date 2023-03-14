@@ -96,13 +96,14 @@ func (sh *shell) run() error {
 		case isCommand(line):
 			err = sh.executeCommand(databaseCmd, line)
 			if err != nil {
-				rx := regexp.MustCompile(`"[^"]*"`)
-				command := rx.FindString(fmt.Sprint(err))
-				if command == "" {
-					PrintError(fmt.Errorf(`unknown command or invalid arguments. Enter ".help" for help`), dbCmdConfig.ErrF)
+				if strings.HasPrefix(err.Error(), "unknown command") {
+					rx := regexp.MustCompile(`"[^"]*"`)
+					command := rx.FindString(fmt.Sprint(err))
+					errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
+					PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
+				} else {
+					PrintError(err, dbCmdConfig.ErrF)
 				}
-				errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
-				PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
 			}
 		default:
 			sh.appendStatementPartAndExecuteIfFinished(line)
