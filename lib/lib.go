@@ -14,7 +14,7 @@ import (
 
 type Db struct {
 	sqlDb *sql.DB
-	path  string
+	Path  string
 }
 
 type statementsResult struct {
@@ -48,7 +48,7 @@ func NewDb(dbPath string) (*Db, error) {
 		return nil, err
 	}
 
-	return &Db{sqlDb: sqlDb, path: dbPath}, nil
+	return &Db{sqlDb: sqlDb, Path: dbPath}, nil
 }
 
 func (db *Db) Close() {

@@ -6,7 +6,6 @@ import (
 	qt "github.com/frankban/quicktest"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/chiselstrike/libsql-shell/lib"
 	"github.com/chiselstrike/libsql-shell/testing/utils"
 )
 
@@ -63,7 +62,7 @@ func (s *RootCommandShellSuite) Test_WhenExecuteInvalidStatement_ExpectError() {
 }
 
 func (s *RootCommandShellSuite) Test_WhenTypingQuitCommand_ExpectShellNotRunFollowingCommands() {
-	outS, errS, err := s.tc.ExecuteShell([]string{lib.QUIT_COMMAND, "SELECT 1;"})
+	outS, errS, err := s.tc.ExecuteShell([]string{".quit", "SELECT 1;"})
 
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(outS, qt.Equals, "")

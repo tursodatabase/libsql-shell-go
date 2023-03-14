@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/chiselstrike/libsql-shell/lib"
+	"github.com/chiselstrike/libsql-shell/shell"
 )
 
 type RootArgs struct {
@@ -48,16 +49,16 @@ func NewRootCmd() *cobra.Command {
 				return nil
 			}
 
-			shellConfig := lib.ShellConfig{
+			shellConfig := shell.ShellConfig{
 				InF:         cmd.InOrStdin(),
 				OutF:        cmd.OutOrStdout(),
 				ErrF:        cmd.ErrOrStderr(),
-				HistoryMode: lib.PerDatabaseHistory,
+				HistoryMode: shell.PerDatabaseHistory,
 				HistoryName: "libsql",
 				QuietMode:   rootArgs.quiet,
 			}
 
-			return db.RunShell(shellConfig)
+			return shell.RunShell(db, shellConfig)
 		},
 	}
 

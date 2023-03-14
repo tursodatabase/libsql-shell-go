@@ -1,11 +1,11 @@
-package lib_test
+package shell_test
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
-	"github.com/chiselstrike/libsql-shell/lib"
+	"github.com/chiselstrike/libsql-shell/shell"
 	qt "github.com/frankban/quicktest"
 )
 
@@ -22,7 +22,7 @@ func TestGetHistoryFileBasedOnMode_GivenLocalHistory_WhenPathIsEmpty_ExpectShare
 
 	dbPath := ""
 	expectedPath := sharedHistoryFileName
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.LocalHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.LocalHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -32,7 +32,7 @@ func TestGetHistoryFileBasedOnMode_GivenLocalHistory_WhenPathIsValid_ExpectShare
 
 	dbPath := "/path/to/my/db.sqlite"
 	expectedPath := sharedHistoryFileName
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.LocalHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.LocalHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -42,7 +42,7 @@ func TestGetHistoryFileBasedOnMode_GivenSingleHistory_WhenPathIsValid_ExpectShar
 
 	dbPath := "/path/to/my/db.sqlite"
 	expectedPath := getExpectedHistoryFullPath(historyName)
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.SingleHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.SingleHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -52,7 +52,7 @@ func TestGetHistoryFileBasedOnMode_GivenSingleHistory_WhenPathIsEmpty_ExpectShar
 
 	dbPath := ""
 	expectedPath := getExpectedHistoryFullPath(historyName)
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.SingleHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.SingleHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -62,7 +62,7 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsValid_Expec
 
 	dbPath := "/path/to/my/db.sqlite"
 	expectedPath := getExpectedHistoryFullPath("db")
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.PerDatabaseHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -72,7 +72,7 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsEmpty_Expec
 
 	dbPath := ""
 	expectedPath := getExpectedHistoryFullPath(historyName)
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.PerDatabaseHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -82,7 +82,7 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsHttpUrl_Exp
 
 	dbPath := "https://username:password@company.turso.io"
 	expectedPath := getExpectedHistoryFullPath("username:password")
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.PerDatabaseHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }
@@ -92,7 +92,7 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsHttpUrlWith
 
 	dbPath := "https://company.turso.io"
 	expectedPath := getExpectedHistoryFullPath(historyName)
-	result := lib.GetHistoryFileBasedOnMode(dbPath, lib.PerDatabaseHistory, historyName)
+	result := shell.GetHistoryFileBasedOnMode(dbPath, shell.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
 }

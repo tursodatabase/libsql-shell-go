@@ -1,4 +1,4 @@
-package lib
+package shell
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/chiselstrike/libsql-shell/lib"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -30,7 +31,7 @@ type ShellConfig struct {
 type shell struct {
 	config ShellConfig
 
-	db        *Db
+	db        *lib.Db
 	promptFmt func(p ...interface{}) string
 
 	readline                 *readline.Instance
@@ -38,7 +39,7 @@ type shell struct {
 	insideMultilineStatement bool
 }
 
-func (db *Db) RunShell(config ShellConfig) error {
+func RunShell(db *lib.Db, config ShellConfig) error {
 	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
@@ -46,7 +47,7 @@ func (db *Db) RunShell(config ShellConfig) error {
 	return shellInstance.run()
 }
 
-func newShell(config ShellConfig, db *Db) (*shell, error) {
+func newShell(config ShellConfig, db *lib.Db) (*shell, error) {
 	promptFmt := color.New(color.FgBlue, color.Bold).SprintFunc()
 	return &shell{config: config, db: db, promptFmt: promptFmt}, nil
 }
@@ -101,9 +102,9 @@ func (sh *shell) run() error {
 					rx := regexp.MustCompile(`"[^"]*"`)
 					command := rx.FindString(fmt.Sprint(err))
 					errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
-					PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
+					lib.PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
 				} else {
-					PrintError(err, dbCmdConfig.ErrF)
+					lib.PrintError(err, dbCmdConfig.ErrF)
 				}
 			}
 		default:
@@ -115,7 +116,7 @@ func (sh *shell) run() error {
 }
 
 func (sh *shell) newReadline() (*readline.Instance, error) {
-	historyFile := GetHistoryFileBasedOnMode(sh.db.path, sh.config.HistoryMode, sh.config.HistoryName)
+	historyFile := GetHistoryFileBasedOnMode(sh.db.Path, sh.config.HistoryMode, sh.config.HistoryName)
 
 	return readline.NewEx(&readline.Config{
 		Prompt:          sh.promptFmt(promptNewStatement),
