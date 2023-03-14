@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/chiselstrike/libsql-shell/src/lib"
+	"github.com/chiselstrike/libsql-shell/lib"
 	qt "github.com/frankban/quicktest"
 )
 

@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
-	"github.com/chiselstrike/libsql-shell/src/lib"
+	"github.com/chiselstrike/libsql-shell/lib"
 )
 
 type RootArgs struct {

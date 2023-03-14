@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chiselstrike/libsql-shell/src/lib"
+	"github.com/chiselstrike/libsql-shell/lib"
 	"github.com/spf13/cobra"
 )
 
