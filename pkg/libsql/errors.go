@@ -1,4 +1,4 @@
-package lib
+package libsql
 
 type TransactionNotSupportedError struct{}
 

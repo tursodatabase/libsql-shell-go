@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/chiselstrike/libsql-shell/lib"
+	"github.com/chiselstrike/libsql-shell/pkg/libsql"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -31,7 +31,7 @@ type ShellConfig struct {
 type shell struct {
 	config ShellConfig
 
-	db        *lib.Db
+	db        *libsql.Db
 	promptFmt func(p ...interface{}) string
 
 	readline                 *readline.Instance
@@ -39,7 +39,7 @@ type shell struct {
 	insideMultilineStatement bool
 }
 
-func RunShell(db *lib.Db, config ShellConfig) error {
+func RunShell(db *libsql.Db, config ShellConfig) error {
 	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func RunShell(db *lib.Db, config ShellConfig) error {
 	return shellInstance.run()
 }
 
-func newShell(config ShellConfig, db *lib.Db) (*shell, error) {
+func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
 	promptFmt := color.New(color.FgBlue, color.Bold).SprintFunc()
 	return &shell{config: config, db: db, promptFmt: promptFmt}, nil
 }
@@ -102,9 +102,9 @@ func (sh *shell) run() error {
 					rx := regexp.MustCompile(`"[^"]*"`)
 					command := rx.FindString(fmt.Sprint(err))
 					errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
-					lib.PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
+					libsql.PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
 				} else {
-					lib.PrintError(err, dbCmdConfig.ErrF)
+					libsql.PrintError(err, dbCmdConfig.ErrF)
 				}
 			}
 		default:

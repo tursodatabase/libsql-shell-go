@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
-	"github.com/chiselstrike/libsql-shell/lib"
+	"github.com/chiselstrike/libsql-shell/pkg/libsql"
 )
 
 type dbCtx struct{}
@@ -15,7 +15,7 @@ type dbCtx struct{}
 type dbCmdConfig struct {
 	OutF io.Writer
 	ErrF io.Writer
-	db   *lib.Db
+	db   *libsql.Db
 }
 
 const helpTemplate = `{{range .Commands}}{{if (and (not .Hidden) (or .IsAvailableCommand) (ne .Name "completion"))}}
