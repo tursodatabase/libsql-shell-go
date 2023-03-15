@@ -7,9 +7,9 @@ import (
 )
 
 var schemaCmd = &cobra.Command{
-	Use:   ".schema",
+	Use:   ".schema ?PATTERN?",
 	Short: `Show table schemas.`,
-	Args:  cobra.NoArgs,
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config, ok := cmd.Context().Value(dbCtx{}).(*dbCmdConfig)
 		if !ok {
@@ -20,8 +20,13 @@ var schemaCmd = &cobra.Command{
 			where name not like 'sqlite_%'
 			and name != '_litestream_seq'
 			and name != '_litestream_lock'
-			and name != 'libsql_wasm_func_table'
-			order by name`
+			and name != 'libsql_wasm_func_table'`
+
+		if len(args) == 1 {
+			schemaStatement += " and name like '" + args[0] + "%'"
+		}
+
+		schemaStatement += " order by name"
 
 		config.db.ExecuteAndPrintStatements(schemaStatement, config.OutF, config.ErrF, true)
 
