@@ -3,7 +3,7 @@ package libsql_test
 import (
 	"testing"
 
-	"github.com/chiselstrike/libsql-shell/testing/utils"
+	"github.com/chiselstrike/libsql-shell/test/utils"
 	qt "github.com/frankban/quicktest"
 )
 
