@@ -17,3 +17,9 @@ type UnableToPrintStatementResult struct{}
 func (e *UnableToPrintStatementResult) Error() string {
 	return "unable to print statement result. You should check if its an error before printing it"
 }
+
+type UrlDoesNotContainUserError struct{}
+
+func (e *UrlDoesNotContainUserError) Error() string {
+	return "url does not contain user"
+}
