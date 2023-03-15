@@ -49,6 +49,37 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCo
 	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE another_simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)\nCREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
 }
 
+func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCommandWithPattern_ExpectToReturnOneSchema() {
+	s.tc.CreateEmptySimpleTable("simple_table")
+	s.tc.CreateEmptySimpleTable("another_simple_table")
+
+	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema simple_table"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCallDotSchemaCommandWithPartialDbName_ExpectToReturnTwoSchemas() {
+	s.tc.CreateEmptySimpleTable("simple_table")
+	s.tc.CreateEmptySimpleTable("test_table_one")
+	s.tc.CreateEmptySimpleTable("test_table_two")
+
+	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema test"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE test_table_one (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)\nCREATE TABLE test_table_two (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCommandWithPatternThatDoesNotMatch_ExpectEmptyReturn() {
+	s.tc.CreateEmptySimpleTable("simple_table")
+	s.tc.CreateEmptySimpleTable("another_simple_table")
+
+	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema non_existing_table"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{""}}))
+}
+
 func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAllAvailableCommands() {
 	outS, errS, err := s.tc.ExecuteShell([]string{".help"})
 	s.tc.Assert(err, qt.IsNil)
