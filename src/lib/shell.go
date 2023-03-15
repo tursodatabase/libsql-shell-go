@@ -21,7 +21,8 @@ type ShellConfig struct {
 	InF            io.Reader
 	OutF           io.Writer
 	ErrF           io.Writer
-	HistoryFile    string
+	HistoryMode    HistoryMode
+	HistoryName    string
 	QuietMode      bool
 	WelcomeMessage *string
 }
@@ -114,10 +115,12 @@ func (sh *shell) run() error {
 }
 
 func (sh *shell) newReadline() (*readline.Instance, error) {
+	historyFile := GetHistoryFileBasedOnMode(sh.db.path, sh.config.HistoryMode, sh.config.HistoryName)
+
 	return readline.NewEx(&readline.Config{
 		Prompt:          sh.promptFmt(promptNewStatement),
 		InterruptPrompt: "^C",
-		HistoryFile:     sh.config.HistoryFile,
+		HistoryFile:     historyFile,
 		EOFPrompt:       QUIT_COMMAND,
 		Stdin:           io.NopCloser(sh.config.InF),
 		Stdout:          sh.config.OutF,

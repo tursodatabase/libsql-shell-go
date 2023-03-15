@@ -52,7 +52,8 @@ func NewRootCmd() *cobra.Command {
 				InF:         cmd.InOrStdin(),
 				OutF:        cmd.OutOrStdout(),
 				ErrF:        cmd.ErrOrStderr(),
-				HistoryFile: fmt.Sprintf("%s/.libsql_shell_history", os.Getenv("HOME")),
+				HistoryMode: lib.PerDatabaseHistory,
+				HistoryName: "libsql",
 				QuietMode:   rootArgs.quiet,
 			}
 
