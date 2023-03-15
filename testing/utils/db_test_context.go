@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -76,4 +77,15 @@ func (tc *DbTestContext) DropAllTables() {
 	for _, createdTable := range tc.getAllTables() {
 		tc.DropTable(createdTable)
 	}
+}
+
+func (tc *DbTestContext) CreateTempFile(content string) (*os.File, string) {
+	filePath := tc.C.TempDir() + `/test.txt`
+	file, err := os.Create(filePath)
+	tc.Assert(err, qt.IsNil)
+
+	_, err = file.WriteString(content)
+	tc.Assert(err, qt.IsNil)
+
+	return file, filePath
 }

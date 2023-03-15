@@ -50,10 +50,33 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCo
 }
 
 func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAllAvailableCommands() {
-	outSchema, errS, err := s.tc.ExecuteShell([]string{".help"})
+	outS, errS, err := s.tc.ExecuteShell([]string{".help"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, ".help       List of all available commands.\n  .schema     Show table schemas.\n  .tables     List all existing tables in the database.\n  .quit       Exit this program.")
+	s.tc.Assert(outS, qt.Equals, ".help       List of all available commands.\n  .read       Execute commands from a file\n  .schema     Show table schemas.\n  .tables     List all existing tables in the database.\n  .quit       Exit this program.")
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenAEmptyDb_WhenCallDotReadCommand_ExpectToSeeATableWithOneEntry() {
+	content := `CREATE TABLE IF NOT EXISTS testread (name TEXT);
+		/* Comment in the middle of the file.*/
+		INSERT INTO testread VALUES("test");
+		
+		SELECT * FROM testread;`
+	file, filePath := s.tc.CreateTempFile(content)
+
+	defer file.Close()
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".read " + filePath})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"NAME"}, [][]string{{"test"}}))
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenAEmptyDb_WhenCallDotReadCommandPassingANonExistingFile_ExpectToReturnAnErrorMessage() {
+	outS, errS, err := s.tc.ExecuteShell([]string{".read nonExistingFile.txt"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "Error: open nonExistingFile.txt: no such file or directory")
+	s.tc.Assert(outS, qt.Equals, "")
 }
 
 func (s *DBRootCommandShellSuite) Test_WhenCallACommandThatDoesNotExist_ExpectToReturnAnErrorMessage() {
