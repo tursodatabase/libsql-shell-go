@@ -35,7 +35,7 @@ type rowResult struct {
 func NewDb(dbPath string) (*Db, error) {
 	var sqlDb *sql.DB
 	var err error
-	if isHttpUrl(dbPath) {
+	if IsHttpUrl(dbPath) {
 		sqlDb, err = sql.Open("libsql", dbPath)
 	} else {
 		sqlDb, err = sql.Open("sqlite3", dbPath)
@@ -49,14 +49,6 @@ func NewDb(dbPath string) (*Db, error) {
 	}
 
 	return &Db{sqlDb: sqlDb}, nil
-}
-
-func isHttpUrl(path string) bool {
-	url, err := url.ParseRequestURI(path)
-	if err != nil {
-		return false
-	}
-	return url.Scheme == "http" || url.Scheme == "https"
 }
 
 func (db *Db) Close() {
