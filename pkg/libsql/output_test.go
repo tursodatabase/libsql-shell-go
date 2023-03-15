@@ -1,4 +1,4 @@
-package lib_test
+package libsql_test
 
 import (
 	"testing"

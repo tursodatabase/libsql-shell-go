@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chiselstrike/libsql-shell/lib"
+	"github.com/chiselstrike/libsql-shell/pkg/libsql"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ func ExecuteWithInitialInput(t *testing.T, c *cobra.Command, initialInput string
 func GetPrintTableOutput(header []string, data [][]string) string {
 	buf := new(bytes.Buffer)
 
-	lib.PrintTable(buf, header, data)
+	libsql.PrintTable(buf, header, data)
 
 	return strings.TrimSpace(buf.String())
 }

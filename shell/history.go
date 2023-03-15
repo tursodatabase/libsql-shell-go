@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chiselstrike/libsql-shell/lib"
+	"github.com/chiselstrike/libsql-shell/pkg/libsql"
 )
 
 type HistoryMode int64
@@ -47,13 +47,13 @@ func getHistoryFolderPath(historyName string) string {
 }
 
 func parseNameFromDbPath(dbPath string) (string, error) {
-	if lib.IsHttpUrl(dbPath) {
+	if libsql.IsHttpUrl(dbPath) {
 		url, err := url.Parse(dbPath)
 		if err != nil {
 			return "", err
 		}
 		if url.User == nil {
-			return "", &lib.UrlDoesNotContainUserError{}
+			return "", &libsql.UrlDoesNotContainUserError{}
 		}
 		return url.User.String(), nil
 	}

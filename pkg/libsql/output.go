@@ -1,4 +1,4 @@
-package lib
+package libsql
 
 import (
 	"encoding/base64"
