@@ -3,7 +3,6 @@ package lib
 import (
 	"database/sql"
 	"io"
-	"net/url"
 	"reflect"
 	"strings"
 
@@ -15,6 +14,7 @@ import (
 
 type Db struct {
 	sqlDb *sql.DB
+	path  string
 }
 
 type statementsResult struct {
@@ -48,7 +48,7 @@ func NewDb(dbPath string) (*Db, error) {
 		return nil, err
 	}
 
-	return &Db{sqlDb: sqlDb}, nil
+	return &Db{sqlDb: sqlDb, path: dbPath}, nil
 }
 
 func (db *Db) Close() {
