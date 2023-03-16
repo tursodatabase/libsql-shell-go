@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chiselstrike/libsql-shell/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/pkg/libsql"
 )
 
 type HistoryMode int64

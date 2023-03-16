@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
-	"github.com/chiselstrike/libsql-shell/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/pkg/libsql"
 )
 
 type dbCtx struct{}
