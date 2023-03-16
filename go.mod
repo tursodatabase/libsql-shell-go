@@ -1,4 +1,4 @@
-module github.com/chiselstrike/libsql-shell
+module github.com/libsql/libsql-shell-go
 
 go 1.20
 

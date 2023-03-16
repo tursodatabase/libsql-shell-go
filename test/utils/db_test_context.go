@@ -8,7 +8,7 @@ import (
 
 	qt "github.com/frankban/quicktest"
 
-	"github.com/chiselstrike/libsql-shell/cmd"
+	"github.com/libsql/libsql-shell-go/cmd"
 )
 
 type DbTestContext struct {

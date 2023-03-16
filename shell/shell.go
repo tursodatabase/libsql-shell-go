@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/chiselstrike/libsql-shell/pkg/libsql"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
+	"github.com/libsql/libsql-shell-go/pkg/libsql"
 	"github.com/spf13/cobra"
 )
 
