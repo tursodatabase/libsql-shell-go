@@ -64,7 +64,7 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCallDotSchema
 	s.tc.CreateEmptySimpleTable("test_table_one")
 	s.tc.CreateEmptySimpleTable("test_table_two")
 
-	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema test"})
+	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema test%"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE test_table_one (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)\nCREATE TABLE test_table_two (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))

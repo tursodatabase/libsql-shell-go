@@ -23,7 +23,7 @@ var schemaCmd = &cobra.Command{
 			and name != 'libsql_wasm_func_table'`
 
 		if len(args) == 1 {
-			schemaStatement += " and name like '" + args[0] + "%'"
+			schemaStatement += " and name like '" + args[0] + "'"
 		}
 
 		schemaStatement += " order by name"
