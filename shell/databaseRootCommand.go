@@ -36,7 +36,7 @@ func NewDatabaseRootCmd(config *dbCmdConfig) *cobra.Command {
 		},
 	}
 
-	rootCmd.AddCommand(tableCmd, schemaCmd, helpCmd, readCmd)
+	rootCmd.AddCommand(tableCmd, schemaCmd, helpCmd, readCmd, indexesCmd)
 	rootCmd.SetOut(config.OutF)
 	rootCmd.SetErr(config.ErrF)
 	rootCmd.SetHelpTemplate(helpTemplate)
