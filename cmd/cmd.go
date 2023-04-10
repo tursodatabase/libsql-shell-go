@@ -31,24 +31,6 @@ func NewRootCmd() *cobra.Command {
 			}
 			defer db.Close()
 
-			if cmd.Flag("exec").Changed {
-				if len(rootArgs.statements) == 0 {
-					return fmt.Errorf("no SQL command to execute")
-				}
-
-				result, err := db.ExecuteStatements(rootArgs.statements)
-				if err != nil {
-					return err
-				}
-
-				err = libsql.PrintStatementsResult(result, cmd.OutOrStdout(), false)
-				if err != nil {
-					return err
-				}
-
-				return nil
-			}
-
 			shellConfig := shell.ShellConfig{
 				InF:         cmd.InOrStdin(),
 				OutF:        cmd.OutOrStdout(),
@@ -56,6 +38,14 @@ func NewRootCmd() *cobra.Command {
 				HistoryMode: shell.PerDatabaseHistory,
 				HistoryName: "libsql",
 				QuietMode:   rootArgs.quiet,
+			}
+
+			if cmd.Flag("exec").Changed {
+				if len(rootArgs.statements) == 0 {
+					return fmt.Errorf("no SQL command to execute")
+				}
+
+				return shell.RunShellCommandOrStatements(db, shellConfig, rootArgs.statements)
 			}
 
 			return shell.RunShell(db, shellConfig)

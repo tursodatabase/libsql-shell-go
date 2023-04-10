@@ -38,6 +38,8 @@ type shell struct {
 	readline                 *readline.Instance
 	statementParts           []string
 	insideMultilineStatement bool
+
+	databaseCmd *cobra.Command
 }
 
 func RunShell(db *libsql.Db, config ShellConfig) error {
@@ -48,9 +50,25 @@ func RunShell(db *libsql.Db, config ShellConfig) error {
 	return shellInstance.run()
 }
 
+func RunShellCommandOrStatements(db *libsql.Db, config ShellConfig, commandOrStatements string) error {
+	shellInstance, err := newShell(config, db)
+	if err != nil {
+		return err
+	}
+	return shellInstance.executeCommandOrStatements(commandOrStatements)
+}
+
 func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
 	promptFmt := color.New(color.FgBlue, color.Bold).SprintFunc()
-	return &shell{config: config, db: db, promptFmt: promptFmt}, nil
+
+	dbCmdConfig := &commands.DbCmdConfig{
+		Db:   db,
+		OutF: config.OutF,
+		ErrF: config.ErrF,
+	}
+	databaseCmd := commands.CreateNewDatabaseRootCmd(dbCmdConfig)
+
+	return &shell{config: config, db: db, promptFmt: promptFmt, databaseCmd: databaseCmd}, nil
 }
 
 func (sh *shell) run() error {
@@ -65,13 +83,6 @@ func (sh *shell) run() error {
 	if !sh.config.QuietMode {
 		fmt.Print(sh.getWelcomeMessage())
 	}
-
-	dbCmdConfig := &commands.DbCmdConfig{
-		Db:   sh.db,
-		OutF: sh.config.OutF,
-		ErrF: sh.config.ErrF,
-	}
-	databaseCmd := commands.CreateNewDatabaseRootCmd(dbCmdConfig)
 
 	for {
 		line, err := sh.readline.Readline()
@@ -96,16 +107,9 @@ func (sh *shell) run() error {
 		case line == QUIT_COMMAND:
 			return nil
 		case isCommand(line):
-			err = sh.executeCommand(databaseCmd, line)
+			err = sh.executeCommand(line)
 			if err != nil {
-				if strings.HasPrefix(err.Error(), "unknown command") {
-					rx := regexp.MustCompile(`"[^"]*"`)
-					command := rx.FindString(fmt.Sprint(err))
-					errorMsg := fmt.Sprintf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
-					libsql.PrintError(fmt.Errorf(errorMsg), dbCmdConfig.ErrF)
-				} else {
-					libsql.PrintError(err, dbCmdConfig.ErrF)
-				}
+				libsql.PrintError(err, sh.config.ErrF)
 			}
 		default:
 			sh.appendStatementPartAndExecuteIfFinished(line)
@@ -133,15 +137,18 @@ func isCommand(line string) bool {
 	return line[0] == '.'
 }
 
-func (sh *shell) executeCommand(databaseCmd *cobra.Command, command string) error {
+func (sh *shell) executeCommand(command string) error {
 	parts := strings.Fields(command)
-	databaseCmd.SetArgs(parts)
+	sh.databaseCmd.SetArgs(parts)
 
-	err := databaseCmd.Execute()
-	if err != nil {
-		return err
+	err := sh.databaseCmd.Execute()
+
+	if err != nil && strings.HasPrefix(err.Error(), "unknown command") {
+		rx := regexp.MustCompile(`"[^"]*"`)
+		command := rx.FindString(fmt.Sprint(err))
+		return fmt.Errorf(`unknown command or invalid arguments: %s. Enter ".help" for help`, command)
 	}
-	return nil
+	return err
 }
 
 func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
@@ -159,6 +166,14 @@ func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 		sh.readline.SetPrompt(sh.promptFmt(promptContinueStatement))
 		sh.insideMultilineStatement = false
 	}
+}
+
+func (sh *shell) executeCommandOrStatements(commandOrStatements string) error {
+	if isCommand(commandOrStatements) {
+		return sh.executeCommand(commandOrStatements)
+	}
+
+	return sh.db.ExecuteAndPrintStatements(commandOrStatements, sh.config.OutF, false)
 }
 
 func (sh *shell) getWelcomeMessage() string {
