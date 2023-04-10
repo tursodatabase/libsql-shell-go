@@ -1,4 +1,4 @@
-package shell
+package commands
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ var tableCmd = &cobra.Command{
 	Short: `List all existing tables in the database.`,
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		config, ok := cmd.Context().Value(dbCtx{}).(*dbCmdConfig)
+		config, ok := cmd.Context().Value(dbCtx{}).(*DbCmdConfig)
 		if !ok {
 			return fmt.Errorf("missing db connection")
 		}
@@ -24,7 +24,7 @@ var tableCmd = &cobra.Command{
 			and name != 'libsql_wasm_func_table'
 			order by name`
 
-		config.db.ExecuteAndPrintStatements(tableStatement, config.OutF, config.ErrF, true)
+		config.Db.ExecuteAndPrintStatements(tableStatement, config.OutF, config.ErrF, true)
 
 		return nil
 	},

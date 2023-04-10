@@ -1,4 +1,4 @@
-package shell
+package commands
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ var schemaCmd = &cobra.Command{
 	Short: `Show table schemas.`,
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		config, ok := cmd.Context().Value(dbCtx{}).(*dbCmdConfig)
+		config, ok := cmd.Context().Value(dbCtx{}).(*DbCmdConfig)
 		if !ok {
 			return fmt.Errorf("missing db connection")
 		}
@@ -28,7 +28,7 @@ var schemaCmd = &cobra.Command{
 
 		schemaStatement += " order by name"
 
-		config.db.ExecuteAndPrintStatements(schemaStatement, config.OutF, config.ErrF, true)
+		config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, config.ErrF, true)
 
 		return nil
 	},
