@@ -14,7 +14,7 @@ import (
 )
 
 const QUIT_COMMAND = ".quit"
-const DEFAULT_WELCOME_MESSAGE = "Welcome to LibSQL shell!\n\nType \".quit\" to exit the shell, \".tables\" to list all tables, and \".schema\" to show table schemas.\n\n"
+const DEFAULT_WELCOME_MESSAGE = "Welcome to LibSQL shell!\n\nType \".quit\" to exit the shell, and \".help\" to show all commands\n\n"
 
 const promptNewStatement = "→  "
 const promptContinueStatement = "... "
