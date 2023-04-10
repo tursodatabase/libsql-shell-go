@@ -86,7 +86,8 @@ func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAll
 	s.tc.Assert(errS, qt.Equals, "")
 
 	expectedHelp :=
-		`.help       List of all available commands.
+		`.dump       Render database content as SQL
+  .help       List of all available commands.
   .indexes    List indexes in a table or database
   .quit       Exit this program
   .read       Execute commands from a file
@@ -126,10 +127,10 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCreateTwoIndexe
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	outSchema, errS, err := s.tc.ExecuteShell([]string{".indexes"})
+	outS, errS, err := s.tc.ExecuteShell([]string{".indexes"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"idx_textfield\nidx_intfield"}}))
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"idx_textfield\nidx_intfield"}}))
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCreateThreeIndexesAndCallDotIndexesCommandPassingExactTableName_ExpectToReturnJustOneIndex() {
@@ -141,10 +142,10 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCreateThreeIn
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	outSchema, errS, err := s.tc.ExecuteShell([]string{".indexes simple_table_3"})
+	outS, errS, err := s.tc.ExecuteShell([]string{".indexes simple_table_3"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"idx_intfield_third_table"}}))
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"idx_intfield_third_table"}}))
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCreateThreeIndexesAndCallDotIndexesCommandPassingPartOfTableName_ExpectToReturnTwoIndexes() {
@@ -156,10 +157,10 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCreateThreeIn
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	outSchema, errS, err := s.tc.ExecuteShell([]string{".indexes simple%"})
+	outS, errS, err := s.tc.ExecuteShell([]string{".indexes simple%"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"idx_textfield\nidx_intfield"}}))
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"idx_textfield\nidx_intfield"}}))
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenADBWithATable_WhenCreateAIndexAndCallDotIndexesCommandPassingAWrongTableName_ExpectEmptyReturn() {
