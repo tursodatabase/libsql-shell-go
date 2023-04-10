@@ -35,8 +35,6 @@ var readCmd = &cobra.Command{
 			return err
 		}
 
-		config.Db.ExecuteAndPrintStatements(strings.TrimSpace(string(content)), config.OutF, config.ErrF, false)
-
-		return nil
+		return config.Db.ExecuteAndPrintStatements(strings.TrimSpace(string(content)), config.OutF, false)
 	},
 }

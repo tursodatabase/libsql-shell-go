@@ -28,8 +28,6 @@ var schemaCmd = &cobra.Command{
 
 		schemaStatement += " order by name"
 
-		config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, config.ErrF, true)
-
-		return nil
+		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true)
 	},
 }

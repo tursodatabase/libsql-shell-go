@@ -99,18 +99,18 @@ func (db *Db) executeStatementsAndPopulateChannel(statements []string, statement
 	}
 }
 
-func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, errF io.Writer, withoutHeader bool) {
+func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, withoutHeader bool) error {
 	result, err := db.ExecuteStatements(statementsString)
 	if err != nil {
-		PrintError(err, errF)
-		return
+		return err
 	}
 
 	err = PrintStatementsResult(result, outF, withoutHeader)
 	if err != nil {
-		PrintError(err, errF)
-		return
+		return err
 	}
+
+	return nil
 }
 
 func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bool) *statementResult {
