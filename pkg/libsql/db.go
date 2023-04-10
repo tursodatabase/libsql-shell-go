@@ -17,11 +17,11 @@ type Db struct {
 	Path  string
 }
 
-type statementsResult struct {
-	StatementResultCh chan statementResult
+type StatementsResult struct {
+	StatementResultCh chan StatementResult
 }
 
-type statementResult struct {
+type StatementResult struct {
 	ColumnNames []string
 	RowCh       chan rowResult
 	Err         error
@@ -55,24 +55,24 @@ func (db *Db) Close() {
 	db.sqlDb.Close()
 }
 
-func (db *Db) ExecuteStatements(statementsString string) (statementsResult, error) {
+func (db *Db) ExecuteStatements(statementsString string) (StatementsResult, error) {
 
 	statements, err := sqlparser.SplitStatementToPieces(statementsString)
 	if err != nil {
-		return statementsResult{}, err
+		return StatementsResult{}, err
 	}
 
-	statementResultCh := make(chan statementResult)
+	statementResultCh := make(chan StatementResult)
 
 	go func() {
 		defer close(statementResultCh)
 		db.executeStatementsAndPopulateChannel(statements, statementResultCh)
 	}()
 
-	return statementsResult{StatementResultCh: statementResultCh}, nil
+	return StatementsResult{StatementResultCh: statementResultCh}, nil
 }
 
-func (db *Db) executeStatementsAndPopulateChannel(statements []string, statementResultCh chan statementResult) {
+func (db *Db) executeStatementsAndPopulateChannel(statements []string, statementResultCh chan StatementResult) {
 	rowsEndedWithoutErrorCh := make(chan bool)
 	defer close(rowsEndedWithoutErrorCh)
 
@@ -113,24 +113,24 @@ func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer,
 	return nil
 }
 
-func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bool) *statementResult {
+func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bool) *StatementResult {
 	if strings.TrimSpace(statement) == "" {
 		return nil
 	}
 
 	rows, err := db.sqlDb.Query(statement)
 	if err != nil {
-		return &statementResult{Err: err}
+		return &StatementResult{Err: err}
 	}
 
 	columnNames, err := getColumnNames(rows)
 	if err != nil {
-		return &statementResult{Err: err}
+		return &StatementResult{Err: err}
 	}
 
 	columnTypes, err := getColumnTypes(rows)
 	if err != nil {
-		return &statementResult{Err: err}
+		return &StatementResult{Err: err}
 	}
 
 	columnNamesLen := len(columnNames)
@@ -173,7 +173,7 @@ func (db *Db) executeStatement(statement string, rowsEndedWithoutErrorCh chan bo
 		rowsEndedWithoutErrorCh <- true
 	}()
 
-	return &statementResult{ColumnNames: columnNames, RowCh: rowCh}
+	return &StatementResult{ColumnNames: columnNames, RowCh: rowCh}
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {
