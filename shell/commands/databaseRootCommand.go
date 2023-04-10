@@ -1,4 +1,4 @@
-package shell
+package commands
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 
 type dbCtx struct{}
 
-type dbCmdConfig struct {
+type DbCmdConfig struct {
 	OutF io.Writer
 	ErrF io.Writer
-	db   *libsql.Db
+	Db   *libsql.Db
 }
 
 const helpTemplate = `{{range .Commands}}{{if (and (not .Hidden) (or .IsAvailableCommand) (ne .Name "completion"))}}
@@ -23,7 +23,7 @@ const helpTemplate = `{{range .Commands}}{{if (and (not .Hidden) (or .IsAvailabl
   {{rpad ".quit" .NamePadding }} Exit this program.
 `
 
-func NewDatabaseRootCmd(config *dbCmdConfig) *cobra.Command {
+func NewDatabaseRootCmd(config *DbCmdConfig) *cobra.Command {
 	var rootCmd = &cobra.Command{
 		SilenceUsage:       true,
 		SilenceErrors:      true,
@@ -43,6 +43,6 @@ func NewDatabaseRootCmd(config *dbCmdConfig) *cobra.Command {
 	return rootCmd
 }
 
-func CreateNewDatabaseRootCmd(config *dbCmdConfig) *cobra.Command {
+func CreateNewDatabaseRootCmd(config *DbCmdConfig) *cobra.Command {
 	return NewDatabaseRootCmd(config)
 }

@@ -1,4 +1,4 @@
-package shell
+package commands
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ var readCmd = &cobra.Command{
 	Short: "Execute commands from a file",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		config, ok := cmd.Context().Value(dbCtx{}).(*dbCmdConfig)
+		config, ok := cmd.Context().Value(dbCtx{}).(*DbCmdConfig)
 		if !ok {
 			return fmt.Errorf("missing db connection")
 		}
@@ -35,7 +35,7 @@ var readCmd = &cobra.Command{
 			return err
 		}
 
-		config.db.ExecuteAndPrintStatements(strings.TrimSpace(string(content)), config.OutF, config.ErrF, false)
+		config.Db.ExecuteAndPrintStatements(strings.TrimSpace(string(content)), config.OutF, config.ErrF, false)
 
 		return nil
 	},

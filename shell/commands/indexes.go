@@ -1,4 +1,4 @@
-package shell
+package commands
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ var indexesCmd = &cobra.Command{
 	Long:  `List all indexes in a table or in the entire database if no table is specified.`,
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		config, ok := cmd.Context().Value(dbCtx{}).(*dbCmdConfig)
+		config, ok := cmd.Context().Value(dbCtx{}).(*DbCmdConfig)
 		if !ok {
 			return fmt.Errorf("missing db connection")
 		}
@@ -24,7 +24,7 @@ var indexesCmd = &cobra.Command{
 			schemaStatement = "SELECT name FROM sqlite_master WHERE type='index'"
 		}
 
-		config.db.ExecuteAndPrintStatements(schemaStatement, config.OutF, config.ErrF, true)
+		config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, config.ErrF, true)
 
 		return nil
 	},

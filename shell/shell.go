@@ -9,6 +9,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/shell/commands"
 	"github.com/spf13/cobra"
 )
 
@@ -65,13 +66,12 @@ func (sh *shell) run() error {
 		fmt.Print(sh.getWelcomeMessage())
 	}
 
-	dbCmdConfig := &dbCmdConfig{
-		db:   sh.db,
+	dbCmdConfig := &commands.DbCmdConfig{
+		Db:   sh.db,
 		OutF: sh.config.OutF,
 		ErrF: sh.config.ErrF,
 	}
-
-	databaseCmd := CreateNewDatabaseRootCmd(dbCmdConfig)
+	databaseCmd := commands.CreateNewDatabaseRootCmd(dbCmdConfig)
 
 	for {
 		line, err := sh.readline.Readline()
