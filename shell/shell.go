@@ -158,13 +158,13 @@ func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 		sh.statementParts = make([]string, 0)
 		sh.insideMultilineStatement = false
 		sh.readline.SetPrompt(sh.promptFmt(promptNewStatement))
-		err := sh.db.ExecuteAndPrintStatements(completeStatement, sh.readline.Stdout(), false)
+		err := sh.db.ExecuteAndPrintStatements(completeStatement, sh.config.OutF, false)
 		if err != nil {
 			libsql.PrintError(err, sh.readline.Stderr())
 		}
 	} else {
 		sh.readline.SetPrompt(sh.promptFmt(promptContinueStatement))
-		sh.insideMultilineStatement = false
+		sh.insideMultilineStatement = true
 	}
 }
 
