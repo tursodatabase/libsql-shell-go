@@ -24,8 +24,6 @@ var tableCmd = &cobra.Command{
 			and name != 'libsql_wasm_func_table'
 			order by name`
 
-		config.Db.ExecuteAndPrintStatements(tableStatement, config.OutF, config.ErrF, true)
-
-		return nil
+		return config.Db.ExecuteAndPrintStatements(tableStatement, config.OutF, true)
 	},
 }
