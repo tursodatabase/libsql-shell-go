@@ -13,14 +13,14 @@ import (
 type dbCtx struct{}
 
 type DbCmdConfig struct {
-	OutF io.Writer
-	ErrF io.Writer
-	Db   *libsql.Db
+	OutF              io.Writer
+	ErrF              io.Writer
+	Db                *libsql.Db
+	SetInterruptShell func()
 }
 
 const helpTemplate = `{{range .Commands}}{{if (and (not .Hidden) (or .IsAvailableCommand) (ne .Name "completion"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}
-  {{rpad ".quit" .NamePadding }} Exit this program.
 `
 
 func NewDatabaseRootCmd(config *DbCmdConfig) *cobra.Command {
@@ -36,7 +36,7 @@ func NewDatabaseRootCmd(config *DbCmdConfig) *cobra.Command {
 		},
 	}
 
-	rootCmd.AddCommand(tableCmd, schemaCmd, helpCmd, readCmd, indexesCmd)
+	rootCmd.AddCommand(tableCmd, schemaCmd, helpCmd, readCmd, indexesCmd, quitCmd)
 	rootCmd.SetOut(config.OutF)
 	rootCmd.SetErr(config.ErrF)
 	rootCmd.SetHelpTemplate(helpTemplate)

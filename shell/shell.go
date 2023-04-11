@@ -35,9 +35,10 @@ type shell struct {
 	db        *libsql.Db
 	promptFmt func(p ...interface{}) string
 
-	readline                 *readline.Instance
-	statementParts           []string
-	insideMultilineStatement bool
+	readline                   *readline.Instance
+	statementParts             []string
+	insideMultilineStatement   bool
+	interruptReadEvalPrintLoop bool
 
 	databaseCmd *cobra.Command
 }
@@ -61,14 +62,17 @@ func RunShellCommandOrStatements(db *libsql.Db, config ShellConfig, commandOrSta
 func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
 	promptFmt := color.New(color.FgBlue, color.Bold).SprintFunc()
 
-	dbCmdConfig := &commands.DbCmdConfig{
-		Db:   db,
-		OutF: config.OutF,
-		ErrF: config.ErrF,
-	}
-	databaseCmd := commands.CreateNewDatabaseRootCmd(dbCmdConfig)
+	newShell := shell{config: config, db: db, promptFmt: promptFmt}
 
-	return &shell{config: config, db: db, promptFmt: promptFmt, databaseCmd: databaseCmd}, nil
+	dbCmdConfig := &commands.DbCmdConfig{
+		Db:                db,
+		OutF:              config.OutF,
+		ErrF:              config.ErrF,
+		SetInterruptShell: func() { newShell.interruptReadEvalPrintLoop = true },
+	}
+	newShell.databaseCmd = commands.CreateNewDatabaseRootCmd(dbCmdConfig)
+
+	return &newShell, nil
 }
 
 func (sh *shell) run() error {
@@ -80,11 +84,13 @@ func (sh *shell) run() error {
 	defer sh.readline.Close()
 	sh.readline.CaptureExitSignal()
 
+	sh.interruptReadEvalPrintLoop = false
+
 	if !sh.config.QuietMode {
 		fmt.Print(sh.getWelcomeMessage())
 	}
 
-	for {
+	for !sh.interruptReadEvalPrintLoop {
 		line, err := sh.readline.Readline()
 
 		if err == readline.ErrInterrupt {
@@ -104,8 +110,6 @@ func (sh *shell) run() error {
 			continue
 		case sh.insideMultilineStatement:
 			sh.appendStatementPartAndExecuteIfFinished(line)
-		case line == QUIT_COMMAND:
-			return nil
 		case isCommand(line):
 			err = sh.executeCommand(line)
 			if err != nil {

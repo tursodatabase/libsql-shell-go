@@ -84,7 +84,15 @@ func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAll
 	outS, errS, err := s.tc.ExecuteShell([]string{".help"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outS, qt.Equals, ".help       List of all available commands.\n  .indexes    List indexes in a table or database\n  .read       Execute commands from a file\n  .schema     Show table schemas.\n  .tables     List all existing tables in the database.\n  .quit       Exit this program.")
+
+	expectedHelp :=
+		`.help       List of all available commands.
+  .indexes    List indexes in a table or database
+  .quit       Exit this program
+  .read       Execute commands from a file
+  .schema     Show table schemas.
+  .tables     List all existing tables in the database.`
+	s.tc.Assert(outS, qt.Equals, expectedHelp)
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenAEmptyDb_WhenCallDotReadCommand_ExpectToSeeATableWithOneEntry() {
