@@ -170,10 +170,64 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithATable_WhenCreateAIndexAndCal
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	outSchema, errS, err := s.tc.ExecuteShell([]string{".indexes nonExistingTable"})
+	outS, errS, err := s.tc.ExecuteShell([]string{".indexes nonExistingTable"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{""}}))
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{""}}))
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenAEmptyTable_WhenCallDotDumpCommand_ExpectNoErrors() {
+	s.tc.CreateEmptyAllTypesTable("alltypes")
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\n"+
+		`CREATE TABLE alltypes(textNullable TEXT, textNotNullable TEXT NOT NULL, textWithDefault TEXT DEFAULT 'defaultValue', intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x"0"');`)
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenATableConainingRandomFields_WhenInsertAndCallDotDumpCommand_ExpectNoErrors() {
+	_, errS, err := s.tc.Execute(`CREATE TABLE alltypes (t text, i integer, r real, b blob);
+	INSERT INTO alltypes VALUES ('text', 99, 3.14, x'0123456789ABCDEF')`)
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes(t TEXT, i INTEGER, r REAL, b BLOB);\nINSERT INTO alltypes VALUES ('text', 99, 3.14, X'0123456789ABCDEF');")
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenATableConainingFieldsWithALLTypes_WhenInsertAndCallDotDumpCommand_ExpectNoErrors() {
+	s.tc.CreateAllTypesTable("alltypes", []utils.AllTypesTableEntry{
+		{TextNotNullable: "text2", IntNotNullable: 0, FloatNotNullable: 1.5, UnknownNotNullable: 0.0, BlobNotNullable: "0123456789ABCDEF"},
+	})
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\n"+
+		`CREATE TABLE alltypes(textNullable TEXT, textNotNullable TEXT NOT NULL, textWithDefault TEXT DEFAULT 'defaultValue', intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x"0"');`+
+		"\n"+`INSERT INTO alltypes VALUES (NULL, 'text2', 'defaultValue', NULL, 0, 0, NULL, 1.5, 0, NULL, 0, 0, NULL, X'0123456789ABCDEF', 'x"0"');`)
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAndCallDotDumpCommand_ExpectNoErrors() {
+	s.tc.CreateEmptyAllTypesTable("alltypes")
+	_, errS, err := s.tc.Execute("CREATE INDEX idx_textNullable on alltypes (textNullable);CREATE INDEX idx_intNotNullable on alltypes (intNotNullable) WHERE intNotNullable > 1;")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\n"+
+		"CREATE TABLE alltypes(textNullable TEXT, textNotNullable TEXT NOT NULL, textWithDefault TEXT DEFAULT 'defaultValue', intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\n"+
+		"CREATE INDEX idx_intNotNullable ON alltypes (intNotNullable) WHERE intNotNullable > 1;\n"+
+		"CREATE INDEX idx_textNullable ON alltypes (textNullable);")
 }
 
 func (s *DBRootCommandShellSuite) Test_WhenCallACommandThatDoesNotExist_ExpectToReturnAnErrorMessage() {
