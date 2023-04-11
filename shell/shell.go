@@ -35,12 +35,16 @@ type shell struct {
 	db        *libsql.Db
 	promptFmt func(p ...interface{}) string
 
+	state shellState
+
+	databaseCmd *cobra.Command
+}
+
+type shellState struct {
 	readline                   *readline.Instance
 	statementParts             []string
 	insideMultilineStatement   bool
 	interruptReadEvalPrintLoop bool
-
-	databaseCmd *cobra.Command
 }
 
 func RunShell(db *libsql.Db, config ShellConfig) error {
@@ -68,7 +72,7 @@ func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
 		Db:                db,
 		OutF:              config.OutF,
 		ErrF:              config.ErrF,
-		SetInterruptShell: func() { newShell.interruptReadEvalPrintLoop = true },
+		SetInterruptShell: func() { newShell.state.interruptReadEvalPrintLoop = true },
 	}
 	newShell.databaseCmd = commands.CreateNewDatabaseRootCmd(dbCmdConfig)
 
@@ -76,22 +80,18 @@ func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
 }
 
 func (sh *shell) run() error {
-	var err error
-	sh.readline, err = sh.newReadline()
+	err := sh.resetState()
 	if err != nil {
 		return err
 	}
-	defer sh.readline.Close()
-	sh.readline.CaptureExitSignal()
-
-	sh.interruptReadEvalPrintLoop = false
+	defer sh.state.readline.Close()
 
 	if !sh.config.QuietMode {
 		fmt.Print(sh.getWelcomeMessage())
 	}
 
-	for !sh.interruptReadEvalPrintLoop {
-		line, err := sh.readline.Readline()
+	for !sh.state.interruptReadEvalPrintLoop {
+		line, err := sh.state.readline.Readline()
 
 		if err == readline.ErrInterrupt {
 			if len(line) == 0 {
@@ -108,7 +108,7 @@ func (sh *shell) run() error {
 		switch {
 		case len(line) == 0:
 			continue
-		case sh.insideMultilineStatement:
+		case sh.state.insideMultilineStatement:
 			sh.appendStatementPartAndExecuteIfFinished(line)
 		case isCommand(line):
 			err = sh.executeCommand(line)
@@ -120,6 +120,22 @@ func (sh *shell) run() error {
 		}
 
 	}
+	return nil
+}
+
+func (sh *shell) resetState() error {
+	var err error
+	sh.state.readline, err = sh.newReadline()
+	if err != nil {
+		return err
+	}
+	sh.state.readline.CaptureExitSignal()
+
+	sh.state.insideMultilineStatement = false
+	sh.state.statementParts = make([]string, 0)
+
+	sh.state.interruptReadEvalPrintLoop = false
+
 	return nil
 }
 
@@ -156,19 +172,19 @@ func (sh *shell) executeCommand(command string) error {
 }
 
 func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
-	sh.statementParts = append(sh.statementParts, statementPart)
+	sh.state.statementParts = append(sh.state.statementParts, statementPart)
 	if strings.HasSuffix(statementPart, ";") {
-		completeStatement := strings.Join(sh.statementParts, "\n")
-		sh.statementParts = make([]string, 0)
-		sh.insideMultilineStatement = false
-		sh.readline.SetPrompt(sh.promptFmt(promptNewStatement))
+		completeStatement := strings.Join(sh.state.statementParts, "\n")
+		sh.state.statementParts = make([]string, 0)
+		sh.state.insideMultilineStatement = false
+		sh.state.readline.SetPrompt(sh.promptFmt(promptNewStatement))
 		err := sh.db.ExecuteAndPrintStatements(completeStatement, sh.config.OutF, false)
 		if err != nil {
-			libsql.PrintError(err, sh.readline.Stderr())
+			libsql.PrintError(err, sh.state.readline.Stderr())
 		}
 	} else {
-		sh.readline.SetPrompt(sh.promptFmt(promptContinueStatement))
-		sh.insideMultilineStatement = true
+		sh.state.readline.SetPrompt(sh.promptFmt(promptContinueStatement))
+		sh.state.insideMultilineStatement = true
 	}
 }
 
