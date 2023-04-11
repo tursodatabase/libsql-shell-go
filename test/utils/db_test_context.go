@@ -37,6 +37,15 @@ func (tc *DbTestContext) CreateEmptySimpleTable(tableName string) {
 	tc.Assert(err, qt.IsNil)
 }
 
+func (tc *DbTestContext) CreateEmptyAllTypesTable(tableName string) {
+	_, _, err := tc.Execute("CREATE TABLE " + tableName + ` (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', 
+	intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', 
+	floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', 
+	unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, 
+	blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x"0"');`)
+	tc.Assert(err, qt.IsNil)
+}
+
 type SimpleTableEntry struct {
 	TextField string
 	IntField  int
@@ -54,6 +63,39 @@ func (tc *DbTestContext) CreateSimpleTable(tableName string, initialValues []Sim
 		values = append(values, fmt.Sprintf("('%v', %v)", initialValue.TextField, initialValue.IntField))
 	}
 	insertQuery := "INSERT INTO " + tableName + "(textField, intField) VALUES " + strings.Join(values, ",")
+
+	_, _, err := tc.Execute(insertQuery)
+	tc.Assert(err, qt.IsNil)
+}
+
+type AllTypesTableEntry struct {
+	TextNotNullable    string
+	IntNotNullable     int
+	FloatNotNullable   float64
+	UnknownNotNullable float64
+	BlobNotNullable    string
+}
+
+func (tc *DbTestContext) CreateAllTypesTable(tableName string, initialValues []AllTypesTableEntry) {
+	tc.CreateEmptyAllTypesTable(tableName)
+
+	if len(initialValues) == 0 {
+		return
+	}
+
+	values := make([]string, 0, len(initialValues))
+	for _, initialValue := range initialValues {
+		values = append(values,
+			fmt.Sprintf("('%v', %v, %f, %f, X'%v')",
+				initialValue.TextNotNullable,
+				initialValue.IntNotNullable,
+				initialValue.FloatNotNullable,
+				initialValue.UnknownNotNullable,
+				initialValue.BlobNotNullable),
+		)
+	}
+	insertQuery := "INSERT INTO " + tableName + `(textNotNullable, intNotNullable, 
+		floatNotNullable, unknownNotNullable, blobNotNullable) VALUES ` + strings.Join(values, ",")
 
 	_, _, err := tc.Execute(insertQuery)
 	tc.Assert(err, qt.IsNil)
