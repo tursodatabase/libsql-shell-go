@@ -30,10 +30,6 @@ func PrintStatementResult(statementResult StatementResult, outF io.Writer, witho
 		return &UnableToPrintStatementResult{}
 	}
 
-	if len(statementResult.ColumnNames) == 0 {
-		return nil
-	}
-
 	table := createTable(outF)
 	if !withoutHeader {
 		table.SetHeader(statementResult.ColumnNames)
