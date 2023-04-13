@@ -9,8 +9,8 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/libsql/libsql-shell-go/pkg/libsql"
-	"github.com/libsql/libsql-shell-go/shell/commands"
-	"github.com/libsql/libsql-shell-go/shell/enums"
+	"github.com/libsql/libsql-shell-go/pkg/shell/commands"
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
 

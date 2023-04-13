@@ -9,7 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
 
-	"github.com/libsql/libsql-shell-go/shell/enums"
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
 )
 
