@@ -9,7 +9,7 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/libsql/libsql-shell-go/internal/db"
-	"github.com/libsql/libsql-shell-go/pkg/shell/commands"
+	"github.com/libsql/libsql-shell-go/internal/shellcmd"
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
@@ -75,7 +75,7 @@ func newShell(config ShellConfig, db *db.Db) (*shell, error) {
 
 	newShell := shell{config: config, db: db, promptFmt: promptFmt}
 
-	dbCmdConfig := &commands.DbCmdConfig{
+	dbCmdConfig := &shellcmd.DbCmdConfig{
 		Db:                db,
 		OutF:              config.OutF,
 		ErrF:              config.ErrF,
@@ -85,7 +85,7 @@ func newShell(config ShellConfig, db *db.Db) (*shell, error) {
 			return newShell.state.printMode
 		},
 	}
-	newShell.databaseCmd = commands.CreateNewDatabaseRootCmd(dbCmdConfig)
+	newShell.databaseCmd = shellcmd.CreateNewDatabaseRootCmd(dbCmdConfig)
 
 	return &newShell, nil
 }
