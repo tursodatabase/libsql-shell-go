@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/spf13/cobra"
 )
 
@@ -34,12 +34,12 @@ var dumpCmd = &cobra.Command{
 	},
 }
 
-func dumpTables(getTableStatementResult libsql.StatementResult, config *DbCmdConfig) error {
+func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig) error {
 	for tableNameRowResult := range getTableStatementResult.RowCh {
 		if tableNameRowResult.Err != nil {
 			return tableNameRowResult.Err
 		}
-		formattedRow, err := libsql.FormatData(tableNameRowResult.Row, libsql.TABLE)
+		formattedRow, err := db.FormatData(tableNameRowResult.Row, db.TABLE)
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func dumpTables(getTableStatementResult libsql.StatementResult, config *DbCmdCon
 	return nil
 }
 
-func dumpTableInfo(tableInfoStatementResult libsql.StatementResult, config *DbCmdConfig, tableName string) error {
+func dumpTableInfo(tableInfoStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
 	createTableStatement := "CREATE TABLE " + tableName + "("
 	var isFirstColumn bool = true
 
@@ -132,14 +132,14 @@ func dumpTableInfo(tableInfoStatementResult libsql.StatementResult, config *DbCm
 	return nil
 }
 
-func dumpTableRecords(tableRecordsStatementResult libsql.StatementResult, config *DbCmdConfig, tableName string) error {
+func dumpTableRecords(tableRecordsStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
 	for tableRecordsRowResult := range tableRecordsStatementResult.RowCh {
 		if tableRecordsRowResult.Err != nil {
 			return tableRecordsRowResult.Err
 		}
 		insertStatement := "INSERT INTO " + tableName + " VALUES ("
 
-		tableRecordsFormattedRow, err := libsql.FormatData(tableRecordsRowResult.Row, libsql.SQLITE)
+		tableRecordsFormattedRow, err := db.FormatData(tableRecordsRowResult.Row, db.SQLITE)
 		if err != nil {
 			return err
 		}
@@ -152,13 +152,13 @@ func dumpTableRecords(tableRecordsStatementResult libsql.StatementResult, config
 	return nil
 }
 
-func dumpTableIndexes(indexesStatementResult libsql.StatementResult, config *DbCmdConfig, tableName string) error {
+func dumpTableIndexes(indexesStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
 	for indexesRowResult := range indexesStatementResult.RowCh {
 		if indexesRowResult.Err != nil {
 			return indexesRowResult.Err
 		}
 
-		indexesFormattedRow, err := libsql.FormatData(indexesRowResult.Row, libsql.TABLE)
+		indexesFormattedRow, err := db.FormatData(indexesRowResult.Row, db.TABLE)
 		if err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func dumpIndex(indexName string, config *DbCmdConfig) error {
 			return indexRowResult.Err
 		}
 
-		indexFormattedRow, err := libsql.FormatData(indexRowResult.Row, libsql.TABLE)
+		indexFormattedRow, err := db.FormatData(indexRowResult.Row, db.TABLE)
 		if err != nil {
 			return err
 		}
@@ -193,78 +193,78 @@ func dumpIndex(indexName string, config *DbCmdConfig) error {
 	return nil
 }
 
-func getDbTables(config *DbCmdConfig) (libsql.StatementResult, error) {
+func getDbTables(config *DbCmdConfig) (db.StatementResult, error) {
 	listTablesResult, err := config.Db.ExecuteStatements("SELECT name FROM sqlite_master WHERE type='table' and name not like 'sqlite_%' and name != '_litestream_seq' and name != '_litestream_lock' and name != 'libsql_wasm_func_table'")
 	if err != nil {
-		return libsql.StatementResult{}, err
+		return db.StatementResult{}, err
 	}
 
 	statementResult := <-listTablesResult.StatementResultCh
 	if statementResult.Err != nil {
-		return libsql.StatementResult{}, statementResult.Err
+		return db.StatementResult{}, statementResult.Err
 	}
 
 	return statementResult, nil
 }
 
-func getTableInfo(config *DbCmdConfig, tableName string) (libsql.StatementResult, error) {
+func getTableInfo(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
 	tableInfoResult, err := config.Db.ExecuteStatements(
 		fmt.Sprintf("PRAGMA table_info(%s)", tableName),
 	)
 	if err != nil {
-		return libsql.StatementResult{}, err
+		return db.StatementResult{}, err
 	}
 
 	statementResult := <-tableInfoResult.StatementResultCh
 	if statementResult.Err != nil {
-		return libsql.StatementResult{}, statementResult.Err
+		return db.StatementResult{}, statementResult.Err
 	}
 
 	return statementResult, nil
 }
 
-func getTableRecords(config *DbCmdConfig, tableName string) (libsql.StatementResult, error) {
+func getTableRecords(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
 	tableRecordsResult, err := config.Db.ExecuteStatements(
 		fmt.Sprintf("SELECT * FROM %s", tableName),
 	)
 	if err != nil {
-		return libsql.StatementResult{}, err
+		return db.StatementResult{}, err
 	}
 
 	statementResult := <-tableRecordsResult.StatementResultCh
 	if statementResult.Err != nil {
-		return libsql.StatementResult{}, statementResult.Err
+		return db.StatementResult{}, statementResult.Err
 	}
 
 	return statementResult, nil
 }
 
-func getTableIndexes(config *DbCmdConfig, tableName string) (libsql.StatementResult, error) {
+func getTableIndexes(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
 	tableIndexesResult, err := config.Db.ExecuteStatements(
 		fmt.Sprintf("PRAGMA index_list(%s)", tableName),
 	)
 	if err != nil {
-		return libsql.StatementResult{}, err
+		return db.StatementResult{}, err
 	}
 
 	statementResult := <-tableIndexesResult.StatementResultCh
 	if statementResult.Err != nil {
-		return libsql.StatementResult{}, statementResult.Err
+		return db.StatementResult{}, statementResult.Err
 	}
 
 	return statementResult, nil
 }
 
-func getIndex(config *DbCmdConfig, indexName string) (libsql.StatementResult, error) {
+func getIndex(config *DbCmdConfig, indexName string) (db.StatementResult, error) {
 	partialIndexResult, err := config.Db.ExecuteStatements(
 		fmt.Sprintf("SELECT REPLACE(REPLACE(sql, ' where ', ' WHERE '), ' on ', ' ON ') AS sql_uppercase FROM sqlite_master WHERE type='index' AND name='%s';", indexName),
 	)
 	if err != nil {
-		return libsql.StatementResult{}, err
+		return db.StatementResult{}, err
 	}
 	statementResult := <-partialIndexResult.StatementResultCh
 	if statementResult.Err != nil {
-		return libsql.StatementResult{}, statementResult.Err
+		return db.StatementResult{}, statementResult.Err
 	}
 
 	return statementResult, nil

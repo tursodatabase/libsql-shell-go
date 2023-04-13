@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
-	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 )
 
@@ -16,7 +16,7 @@ type dbCtx struct{}
 type DbCmdConfig struct {
 	OutF              io.Writer
 	ErrF              io.Writer
-	Db                *libsql.Db
+	Db                *db.Db
 	SetInterruptShell func()
 	SetMode           func(mode enums.PrintMode)
 	GetMode           func() enums.PrintMode

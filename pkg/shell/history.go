@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/internal/db"
 )
 
 type HistoryMode int64
@@ -47,13 +47,13 @@ func getHistoryFolderPath(historyName string) string {
 }
 
 func parseNameFromDbPath(dbPath string) (string, error) {
-	if libsql.IsHttpUrl(dbPath) {
+	if db.IsHttpUrl(dbPath) {
 		url, err := url.Parse(dbPath)
 		if err != nil {
 			return "", err
 		}
 		if url.User == nil {
-			return "", &libsql.UrlDoesNotContainUserError{}
+			return "", &db.UrlDoesNotContainUserError{}
 		}
 		return url.User.String(), nil
 	}
