@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/libsql/libsql-shell-go/internal/db"
+	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
 )
 
 type HistoryMode int64
@@ -53,7 +54,7 @@ func parseNameFromDbPath(dbPath string) (string, error) {
 			return "", err
 		}
 		if url.User == nil {
-			return "", &db.UrlDoesNotContainUserError{}
+			return "", &shellerrors.UrlDoesNotContainUserError{}
 		}
 		return url.User.String(), nil
 	}
