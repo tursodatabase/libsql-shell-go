@@ -6,11 +6,12 @@ import (
 	"reflect"
 	"strings"
 
+	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
 
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
-	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
+	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
 )
 
 type Db struct {
@@ -86,7 +87,7 @@ func (db *Db) executeStatementsAndPopulateChannel(statements []string, statement
 
 		if result.Err != nil {
 			if strings.Contains(result.Err.Error(), "interactive transaction not allowed in HTTP queries") {
-				result.Err = &TransactionNotSupportedError{}
+				result.Err = &shellerrors.TransactionNotSupportedError{}
 			}
 			statementResultCh <- *result
 			return
