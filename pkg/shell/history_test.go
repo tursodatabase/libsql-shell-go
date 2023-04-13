@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-	"github.com/libsql/libsql-shell-go/shell"
+	"github.com/libsql/libsql-shell-go/pkg/shell"
 )
 
 const historyName = "libsql"

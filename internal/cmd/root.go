@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/libsql/libsql-shell-go/pkg/libsql"
-	"github.com/libsql/libsql-shell-go/shell"
+	"github.com/libsql/libsql-shell-go/pkg/shell"
 )
 
 type RootArgs struct {

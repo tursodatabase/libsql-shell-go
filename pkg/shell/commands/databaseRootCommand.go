@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/libsql/libsql-shell-go/pkg/libsql"
-	"github.com/libsql/libsql-shell-go/shell/enums"
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 )
 
 type dbCtx struct{}
