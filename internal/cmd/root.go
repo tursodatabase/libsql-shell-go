@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
-	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/libsql/libsql-shell-go/pkg/shell"
 )
 
@@ -25,7 +25,7 @@ func NewRootCmd() *cobra.Command {
 		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbPath := args[0]
-			db, err := libsql.NewDb(dbPath)
+			db, err := db.NewDb(dbPath)
 			if err != nil {
 				return err
 			}

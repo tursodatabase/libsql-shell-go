@@ -8,7 +8,7 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
-	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/libsql/libsql-shell-go/pkg/shell/commands"
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
@@ -33,7 +33,7 @@ type ShellConfig struct {
 type shell struct {
 	config ShellConfig
 
-	db        *libsql.Db
+	db        *db.Db
 	promptFmt func(p ...interface{}) string
 
 	state shellState
@@ -49,7 +49,7 @@ type shellState struct {
 	printMode                  enums.PrintMode
 }
 
-func RunShell(db *libsql.Db, config ShellConfig) error {
+func RunShell(db *db.Db, config ShellConfig) error {
 	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func RunShell(db *libsql.Db, config ShellConfig) error {
 	return shellInstance.run()
 }
 
-func RunShellCommandOrStatements(db *libsql.Db, config ShellConfig, commandOrStatements string) error {
+func RunShellCommandOrStatements(db *db.Db, config ShellConfig, commandOrStatements string) error {
 	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func RunShellCommandOrStatements(db *libsql.Db, config ShellConfig, commandOrSta
 	return shellInstance.executeCommandOrStatements(commandOrStatements)
 }
 
-func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
+func newShell(config ShellConfig, db *db.Db) (*shell, error) {
 	promptFmt := color.New(color.FgBlue, color.Bold).SprintFunc()
 
 	newShell := shell{config: config, db: db, promptFmt: promptFmt}
@@ -124,7 +124,7 @@ func (sh *shell) run() error {
 		case isCommand(line):
 			err = sh.executeCommand(line)
 			if err != nil {
-				libsql.PrintError(err, sh.config.ErrF)
+				db.PrintError(err, sh.config.ErrF)
 			}
 		default:
 			sh.appendStatementPartAndExecuteIfFinished(line)
@@ -193,7 +193,7 @@ func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 		sh.state.readline.SetPrompt(sh.promptFmt(promptNewStatement))
 		err := sh.db.ExecuteAndPrintStatements(completeStatement, sh.config.OutF, false, sh.state.printMode)
 		if err != nil {
-			libsql.PrintError(err, sh.state.readline.Stderr())
+			db.PrintError(err, sh.state.readline.Stderr())
 		}
 	} else {
 		sh.state.readline.SetPrompt(sh.promptFmt(promptContinueStatement))
