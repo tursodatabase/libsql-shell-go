@@ -58,7 +58,7 @@ func NewRootCmd() *cobra.Command {
 	return rootCmd
 }
 
-func Init() {
+func Execute() {
 	var rootCmd *cobra.Command = NewRootCmd()
 
 	if err := rootCmd.Execute(); err != nil {
