@@ -21,6 +21,7 @@ const promptNewStatement = "→  "
 const promptContinueStatement = "... "
 
 type ShellConfig struct {
+	DbPath         string
 	InF            io.Reader
 	OutF           io.Writer
 	ErrF           io.Writer
@@ -49,7 +50,13 @@ type shellState struct {
 	printMode                  enums.PrintMode
 }
 
-func RunShell(db *db.Db, config ShellConfig) error {
+func RunShell(config ShellConfig) error {
+	db, err := db.NewDb(config.DbPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
@@ -57,7 +64,13 @@ func RunShell(db *db.Db, config ShellConfig) error {
 	return shellInstance.run()
 }
 
-func RunShellCommandOrStatements(db *db.Db, config ShellConfig, commandOrStatements string) error {
+func RunShellLine(config ShellConfig, line string) error {
+	db, err := db.NewDb(config.DbPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	shellInstance, err := newShell(config, db)
 	if err != nil {
 		return err
@@ -67,7 +80,8 @@ func RunShellCommandOrStatements(db *db.Db, config ShellConfig, commandOrStateme
 	if err != nil {
 		return err
 	}
-	return shellInstance.executeCommandOrStatements(commandOrStatements)
+
+	return shellInstance.executeCommandOrStatements(line)
 }
 
 func newShell(config ShellConfig, db *db.Db) (*shell, error) {
