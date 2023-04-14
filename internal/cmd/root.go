@@ -7,7 +7,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
-	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/libsql/libsql-shell-go/pkg/shell"
 )
 
@@ -24,14 +23,8 @@ func NewRootCmd() *cobra.Command {
 		Short:        "A cli for executing SQL statements on a libSQL or SQLite database",
 		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dbPath := args[0]
-			db, err := db.NewDb(dbPath)
-			if err != nil {
-				return err
-			}
-			defer db.Close()
-
 			shellConfig := shell.ShellConfig{
+				DbPath:      args[0],
 				InF:         cmd.InOrStdin(),
 				OutF:        cmd.OutOrStdout(),
 				ErrF:        cmd.ErrOrStderr(),
@@ -45,10 +38,10 @@ func NewRootCmd() *cobra.Command {
 					return fmt.Errorf("no SQL command to execute")
 				}
 
-				return shell.RunShellCommandOrStatements(db, shellConfig, rootArgs.statements)
+				return shell.RunShellLine(shellConfig, rootArgs.statements)
 			}
 
-			return shell.RunShell(db, shellConfig)
+			return shell.RunShell(shellConfig)
 		},
 	}
 
