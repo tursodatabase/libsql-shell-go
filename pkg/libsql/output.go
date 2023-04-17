@@ -1,13 +1,94 @@
 package libsql
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io"
 
+	"github.com/libsql/libsql-shell-go/shell/enums"
 	"github.com/olekukonko/tablewriter"
 )
 
-func PrintStatementsResult(statementsResult StatementsResult, outF io.Writer, withoutHeader bool) error {
+type Printer interface {
+	print(statementResult StatementResult, outF io.Writer) error
+}
+
+type TablePrinter struct {
+	withoutHeader bool
+}
+
+func (t TablePrinter) print(statementResult StatementResult, outF io.Writer) error {
+	data := [][]string{}
+	table := createTable(outF)
+	if !t.withoutHeader {
+		table.SetHeader(statementResult.ColumnNames)
+	}
+
+	tableData, err := appendData(statementResult, data)
+	if err != nil {
+		return err
+	}
+
+	table.AppendBulk(tableData)
+	table.Render()
+	return nil
+}
+
+type CSVPrinter struct {
+	withoutHeader bool
+}
+
+func (c CSVPrinter) print(statementResult StatementResult, outF io.Writer) error {
+	data := [][]string{}
+	if !c.withoutHeader {
+		data = append(data, statementResult.ColumnNames)
+	}
+
+	csvData, err := appendData(statementResult, data)
+	if err != nil {
+		return err
+	}
+
+	csvWriter := csv.NewWriter(outF)
+	err = csvWriter.WriteAll(csvData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func appendData(statementResult StatementResult, data [][]string) ([][]string, error) {
+	for row := range statementResult.RowCh {
+		if row.Err != nil {
+			return [][]string{}, row.Err
+		}
+
+		formattedRow, err := FormatData(row.Row, CSV)
+		if err != nil {
+			return [][]string{}, err
+		}
+		data = append(data, formattedRow)
+	}
+	return data, nil
+}
+
+func getPrinter(mode enums.PrintMode, withoutHeader bool) (Printer, error) {
+	switch mode {
+	case enums.TABLE_MODE:
+		return &TablePrinter{
+			withoutHeader: withoutHeader,
+		}, nil
+	case enums.CSV_MODE:
+		return &CSVPrinter{
+			withoutHeader: withoutHeader,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unsupported printer: %s", mode)
+	}
+}
+
+func PrintStatementsResult(statementsResult StatementsResult, outF io.Writer, withoutHeader bool, mode enums.PrintMode) error {
 	if statementsResult.StatementResultCh == nil {
 		return &InvalidStatementsResult{}
 	}
@@ -17,7 +98,7 @@ func PrintStatementsResult(statementsResult StatementsResult, outF io.Writer, wi
 			return statementResult.Err
 		}
 
-		err := PrintStatementResult(statementResult, outF, withoutHeader)
+		err := PrintStatementResult(statementResult, outF, withoutHeader, mode)
 		if err != nil {
 			return err
 		}
@@ -25,29 +106,21 @@ func PrintStatementsResult(statementsResult StatementsResult, outF io.Writer, wi
 	return nil
 }
 
-func PrintStatementResult(statementResult StatementResult, outF io.Writer, withoutHeader bool) error {
+func PrintStatementResult(statementResult StatementResult, outF io.Writer, withoutHeader bool, mode enums.PrintMode) error {
 	if statementResult.RowCh == nil {
 		return &UnableToPrintStatementResult{}
 	}
 
-	table := createTable(outF)
-	if !withoutHeader {
-		table.SetHeader(statementResult.ColumnNames)
+	printer, err := getPrinter(mode, withoutHeader)
+	if err != nil {
+		return err
 	}
 
-	for row := range statementResult.RowCh {
-		if row.Err != nil {
-			return row.Err
-		}
-		formattedRow, err := FormatData(row.Row, TABLE)
-
-		if err != nil {
-			return err
-		}
-		table.Append(formattedRow)
+	err = printer.print(statementResult, outF)
+	if err != nil {
+		return err
 	}
 
-	table.Render()
 	return nil
 }
 

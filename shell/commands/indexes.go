@@ -24,6 +24,6 @@ var indexesCmd = &cobra.Command{
 			schemaStatement = "SELECT name FROM sqlite_master WHERE type='index'"
 		}
 
-		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true)
+		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true, config.GetMode())
 	},
 }

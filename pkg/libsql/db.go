@@ -9,6 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
 
+	"github.com/libsql/libsql-shell-go/shell/enums"
 	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
 )
 
@@ -99,13 +100,13 @@ func (db *Db) executeStatementsAndPopulateChannel(statements []string, statement
 	}
 }
 
-func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, withoutHeader bool) error {
+func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, withoutHeader bool, printMode enums.PrintMode) error {
 	result, err := db.ExecuteStatements(statementsString)
 	if err != nil {
 		return err
 	}
 
-	err = PrintStatementsResult(result, outF, withoutHeader)
+	err = PrintStatementsResult(result, outF, withoutHeader, printMode)
 	if err != nil {
 		return err
 	}
