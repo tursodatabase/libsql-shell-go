@@ -25,6 +25,7 @@ type FormatType int64
 const (
 	TABLE FormatType = iota
 	SQLITE
+	CSV
 )
 
 type CommonFormatter struct{}
@@ -81,6 +82,14 @@ func (s SQLiteFormatter) formatString(value string) string {
 	return fmt.Sprintf("'%v'", value)
 }
 
+type CSVFormatter struct {
+	*TableFormatter
+}
+
+func (c CSVFormatter) formatDateTime(value time.Time) string {
+	return fmt.Sprintf("'%s'", value.Format("2006-01-02 15:04:05"))
+}
+
 func GetFormatter(format FormatType) Formatter {
 	common := &CommonFormatter{}
 	switch format {
@@ -88,6 +97,10 @@ func GetFormatter(format FormatType) Formatter {
 		return &TableFormatter{common}
 	case SQLITE:
 		return &SQLiteFormatter{common}
+	case CSV:
+		return CSVFormatter{
+			&TableFormatter{common},
+		}
 	default:
 		return nil
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/libsql/libsql-shell-go/pkg/libsql"
+	"github.com/libsql/libsql-shell-go/shell/enums"
 )
 
 type dbCtx struct{}
@@ -17,6 +18,8 @@ type DbCmdConfig struct {
 	ErrF              io.Writer
 	Db                *libsql.Db
 	SetInterruptShell func()
+	SetMode           func(mode enums.PrintMode)
+	GetMode           func() enums.PrintMode
 }
 
 const helpTemplate = `{{range .Commands}}{{if (and (not .Hidden) (or .IsAvailableCommand) (ne .Name "completion"))}}
@@ -36,7 +39,7 @@ func NewDatabaseRootCmd(config *DbCmdConfig) *cobra.Command {
 		},
 	}
 
-	rootCmd.AddCommand(tableCmd, schemaCmd, helpCmd, readCmd, indexesCmd, quitCmd, dumpCmd)
+	rootCmd.AddCommand(tableCmd, schemaCmd, helpCmd, readCmd, indexesCmd, quitCmd, dumpCmd, modeCmd)
 	rootCmd.SetOut(config.OutF)
 	rootCmd.SetErr(config.ErrF)
 	rootCmd.SetHelpTemplate(helpTemplate)

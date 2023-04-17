@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/libsql/libsql-shell-go/pkg/libsql"
 	"github.com/libsql/libsql-shell-go/shell/commands"
+	"github.com/libsql/libsql-shell-go/shell/enums"
 	"github.com/spf13/cobra"
 )
 
@@ -45,6 +46,7 @@ type shellState struct {
 	statementParts             []string
 	insideMultilineStatement   bool
 	interruptReadEvalPrintLoop bool
+	printMode                  enums.PrintMode
 }
 
 func RunShell(db *libsql.Db, config ShellConfig) error {
@@ -57,6 +59,11 @@ func RunShell(db *libsql.Db, config ShellConfig) error {
 
 func RunShellCommandOrStatements(db *libsql.Db, config ShellConfig, commandOrStatements string) error {
 	shellInstance, err := newShell(config, db)
+	if err != nil {
+		return err
+	}
+
+	err = shellInstance.resetState()
 	if err != nil {
 		return err
 	}
@@ -73,6 +80,10 @@ func newShell(config ShellConfig, db *libsql.Db) (*shell, error) {
 		OutF:              config.OutF,
 		ErrF:              config.ErrF,
 		SetInterruptShell: func() { newShell.state.interruptReadEvalPrintLoop = true },
+		SetMode:           func(mode enums.PrintMode) { newShell.state.printMode = mode },
+		GetMode: func() enums.PrintMode {
+			return newShell.state.printMode
+		},
 	}
 	newShell.databaseCmd = commands.CreateNewDatabaseRootCmd(dbCmdConfig)
 
@@ -136,6 +147,8 @@ func (sh *shell) resetState() error {
 
 	sh.state.interruptReadEvalPrintLoop = false
 
+	sh.state.printMode = enums.TABLE_MODE
+
 	return nil
 }
 
@@ -178,7 +191,7 @@ func (sh *shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 		sh.state.statementParts = make([]string, 0)
 		sh.state.insideMultilineStatement = false
 		sh.state.readline.SetPrompt(sh.promptFmt(promptNewStatement))
-		err := sh.db.ExecuteAndPrintStatements(completeStatement, sh.config.OutF, false)
+		err := sh.db.ExecuteAndPrintStatements(completeStatement, sh.config.OutF, false, sh.state.printMode)
 		if err != nil {
 			libsql.PrintError(err, sh.state.readline.Stderr())
 		}
@@ -193,7 +206,7 @@ func (sh *shell) executeCommandOrStatements(commandOrStatements string) error {
 		return sh.executeCommand(commandOrStatements)
 	}
 
-	return sh.db.ExecuteAndPrintStatements(commandOrStatements, sh.config.OutF, false)
+	return sh.db.ExecuteAndPrintStatements(commandOrStatements, sh.config.OutF, false, sh.state.printMode)
 }
 
 func (sh *shell) getWelcomeMessage() string {
