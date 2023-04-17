@@ -89,6 +89,7 @@ func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAll
 		`.dump       Render database content as SQL
   .help       List of all available commands.
   .indexes    List indexes in a table or database
+  .mode       Set output mode
   .quit       Exit this program
   .read       Execute commands from a file
   .schema     Show table schemas.
