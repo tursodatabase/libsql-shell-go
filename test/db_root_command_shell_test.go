@@ -231,6 +231,24 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAnd
 		"CREATE INDEX idx_textNullable ON alltypes (textNullable);")
 }
 
+func (s *DBRootCommandShellSuite) Test_GivenATableWithRecord_WhenCallDotModeCSVAndSelect_ExpectNoErrors() {
+	s.tc.CreateSimpleTable("simple_table", []utils.SimpleTableEntry{{TextField: "value \"1", IntField: 1}, {TextField: "value, 2", IntField: 2}})
+
+	outS, errSMode, err := s.tc.ExecuteShell([]string{".mode csv", "SELECT * from simple_table;"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errSMode, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, "id,textField,intField\n1,\"value \"\"1\",1\n2,\"value, 2\",2")
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenAnEmptyTable_WhenCallDotModeCSVAndSelect_ExpectNoErrors() {
+	s.tc.CreateEmptySimpleTable("simple_table")
+
+	outS, errSMode, err := s.tc.ExecuteShell([]string{".mode csv", "SELECT * from simple_table;"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errSMode, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, "id,textField,intField")
+}
+
 func (s *DBRootCommandShellSuite) Test_WhenCallACommandThatDoesNotExist_ExpectToReturnAnErrorMessage() {
 	outS, errS, err := s.tc.ExecuteShell([]string{".nonExistingCommand"})
 	s.tc.Assert(err, qt.IsNil)
