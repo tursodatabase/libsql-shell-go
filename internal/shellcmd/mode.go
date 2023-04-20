@@ -22,6 +22,8 @@ var modeCmd = &cobra.Command{
 			config.SetMode(enums.TABLE_MODE)
 		case string(enums.CSV_MODE):
 			config.SetMode(enums.CSV_MODE)
+		case string(enums.JSON_MODE):
+			config.SetMode(enums.JSON_MODE)
 		default:
 			return fmt.Errorf("unsupported mode")
 		}

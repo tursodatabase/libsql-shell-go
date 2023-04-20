@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -24,7 +25,7 @@ func (t TablePrinter) print(statementResult StatementResult, outF io.Writer) err
 		table.SetHeader(statementResult.ColumnNames)
 	}
 
-	tableData, err := appendData(statementResult, data)
+	tableData, err := appendData(statementResult, data, TABLE)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (c CSVPrinter) print(statementResult StatementResult, outF io.Writer) error
 		data = append(data, statementResult.ColumnNames)
 	}
 
-	csvData, err := appendData(statementResult, data)
+	csvData, err := appendData(statementResult, data, CSV)
 	if err != nil {
 		return err
 	}
@@ -58,13 +59,42 @@ func (c CSVPrinter) print(statementResult StatementResult, outF io.Writer) error
 	return nil
 }
 
-func appendData(statementResult StatementResult, data [][]string) ([][]string, error) {
+type JSONPrinter struct{}
+
+func (c JSONPrinter) print(statementResult StatementResult, outF io.Writer) error {
+	var data []map[string]interface{}
+
+	for row := range statementResult.RowCh {
+		if row.Err != nil {
+			return row.Err
+		}
+		rowData := make(map[string]interface{})
+		formattedRow, err := FormatData(row.Row, JSON)
+		if err != nil {
+			return err
+		}
+		for i, v := range statementResult.ColumnNames {
+			rowData[v] = formattedRow[i]
+		}
+		data = append(data, rowData)
+	}
+
+	json, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	if string(json) != "null" {
+		fmt.Fprintln(outF, string(json))
+	}
+	return nil
+}
+
+func appendData(statementResult StatementResult, data [][]string, mode FormatType) ([][]string, error) {
 	for row := range statementResult.RowCh {
 		if row.Err != nil {
 			return [][]string{}, row.Err
 		}
-
-		formattedRow, err := FormatData(row.Row, CSV)
+		formattedRow, err := FormatData(row.Row, mode)
 		if err != nil {
 			return [][]string{}, err
 		}
@@ -83,6 +113,8 @@ func getPrinter(mode enums.PrintMode, withoutHeader bool) (Printer, error) {
 		return &CSVPrinter{
 			withoutHeader: withoutHeader,
 		}, nil
+	case enums.JSON_MODE:
+		return &JSONPrinter{}, nil
 	default:
 		return nil, fmt.Errorf("unsupported printer: %s", mode)
 	}

@@ -26,6 +26,7 @@ const (
 	TABLE FormatType = iota
 	SQLITE
 	CSV
+	JSON
 )
 
 type CommonFormatter struct{}
@@ -90,6 +91,10 @@ func (c CSVFormatter) formatDateTime(value time.Time) string {
 	return fmt.Sprintf("'%s'", value.Format("2006-01-02 15:04:05"))
 }
 
+type JSONFormatter struct {
+	*TableFormatter
+}
+
 func GetFormatter(format FormatType) Formatter {
 	common := &CommonFormatter{}
 	switch format {
@@ -99,6 +104,10 @@ func GetFormatter(format FormatType) Formatter {
 		return &SQLiteFormatter{common}
 	case CSV:
 		return CSVFormatter{
+			&TableFormatter{common},
+		}
+	case JSON:
+		return JSONFormatter{
 			&TableFormatter{common},
 		}
 	default:
