@@ -48,7 +48,7 @@ func getHistoryFolderPath(historyName string) string {
 }
 
 func parseNameFromDbPath(dbPath string) (string, error) {
-	if db.IsHttpUrl(dbPath) {
+	if db.IsUrl(dbPath) {
 		url, err := url.Parse(dbPath)
 		if err != nil {
 			return "", err

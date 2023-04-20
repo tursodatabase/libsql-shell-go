@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	_ "github.com/libsql/sqld/packages/golang/libsql-client/sql_driver"
+	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
 
@@ -37,7 +37,7 @@ type rowResult struct {
 func NewDb(dbPath string) (*Db, error) {
 	var sqlDb *sql.DB
 	var err error
-	if IsHttpUrl(dbPath) {
+	if IsUrl(dbPath) {
 		sqlDb, err = sql.Open("libsql", dbPath)
 	} else {
 		sqlDb, err = sql.Open("sqlite3", dbPath)
