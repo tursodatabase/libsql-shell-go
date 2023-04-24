@@ -249,6 +249,24 @@ func (s *DBRootCommandShellSuite) Test_GivenAnEmptyTable_WhenCallDotModeCSVAndSe
 	s.tc.Assert(outS, qt.Equals, "id,textField,intField")
 }
 
+func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCallDotModeJSONAndSelect_ExpectNoErrors() {
+	s.tc.CreateSimpleTable("simple_table", []utils.SimpleTableEntry{{TextField: "value", IntField: 1}, {TextField: "value2", IntField: 2}})
+
+	outS, errSMode, err := s.tc.ExecuteShell([]string{".mode json", "SELECT * from simple_table;"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errSMode, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, `[{"id":"1","intField":"1","textField":"value"},{"id":"2","intField":"2","textField":"value2"}]`)
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenAnEmptyTable_WhenCallDotModeJSONAndSelect_ExpectEmptyReturn() {
+	s.tc.CreateEmptySimpleTable("simple_table")
+
+	outS, errSMode, err := s.tc.ExecuteShell([]string{".mode json", "SELECT * from simple_table;"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errSMode, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, "")
+}
+
 func (s *DBRootCommandShellSuite) Test_WhenCallACommandThatDoesNotExist_ExpectToReturnAnErrorMessage() {
 	outS, errS, err := s.tc.ExecuteShell([]string{".nonExistingCommand"})
 	s.tc.Assert(err, qt.IsNil)
