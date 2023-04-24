@@ -19,7 +19,7 @@ func NewRootCmd() *cobra.Command {
 	var rootArgs RootArgs = RootArgs{}
 	var rootCmd = &cobra.Command{
 		SilenceUsage: true,
-		Use:          "libsql-shell",
+		Use:          "libsql-shell <DB>",
 		Short:        "A cli for executing SQL statements on a libSQL or SQLite database",
 		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
