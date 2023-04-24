@@ -3,8 +3,11 @@ package db
 import "net/url"
 
 func IsUrl(path string) bool {
-	_, err := url.ParseRequestURI(path)
-	return err == nil
+	url, err := url.ParseRequestURI(path)
+	if err != nil {
+		return false
+	}
+	return url.Scheme != ""
 }
 
 func IsValidTursoUrl(path string) bool {
@@ -12,5 +15,5 @@ func IsValidTursoUrl(path string) bool {
 	if err != nil {
 		return false
 	}
-	return url.Scheme == "http" || url.Scheme == "https" || url.Scheme == "libsql"
+	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws"
 }

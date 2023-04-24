@@ -27,3 +27,12 @@ func (e *UrlDoesNotContainUserError) Error() string {
 func (e *UrlDoesNotContainUserError) userError() string {
 	return "url does not contain user"
 }
+
+type InvalidTursoProtocolError struct{}
+
+func (e *InvalidTursoProtocolError) Error() string {
+	return e.userError()
+}
+func (e *InvalidTursoProtocolError) userError() string {
+	return "invalid turso protocol. valid protocols are libsql://, wss:// and ws://"
+}
