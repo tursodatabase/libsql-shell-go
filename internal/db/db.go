@@ -38,7 +38,11 @@ func NewDb(dbPath string) (*Db, error) {
 	var sqlDb *sql.DB
 	var err error
 	if IsUrl(dbPath) {
-		sqlDb, err = sql.Open("libsql", dbPath)
+		if IsValidTursoUrl(dbPath) {
+			sqlDb, err = sql.Open("libsql", dbPath)
+		} else {
+			return nil, &shellerrors.InvalidTursoProtocolError{}
+		}
 	} else {
 		sqlDb, err = sql.Open("sqlite3", dbPath)
 	}
