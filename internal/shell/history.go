@@ -7,24 +7,17 @@ import (
 	"path/filepath"
 
 	"github.com/libsql/libsql-shell-go/internal/db"
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
 )
 
-type HistoryMode int64
-
-const (
-	SingleHistory      HistoryMode = 0
-	PerDatabaseHistory HistoryMode = 1
-	LocalHistory       HistoryMode = 2
-)
-
-func GetHistoryFileBasedOnMode(dbPath string, mode HistoryMode, historyName string) string {
+func GetHistoryFileBasedOnMode(dbPath string, mode enums.HistoryMode, historyName string) string {
 	sharedHistoryFileName := getHistoryFileName(historyName)
 
 	switch mode {
-	case LocalHistory:
+	case enums.LocalHistory:
 		return sharedHistoryFileName
-	case PerDatabaseHistory:
+	case enums.PerDatabaseHistory:
 		if parsedName, err := parseNameFromDbPath(dbPath); err == nil && parsedName != "" {
 			return getHistoryFileFullPath(historyName, getHistoryFileName(parsedName))
 		}
