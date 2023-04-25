@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -8,7 +9,9 @@ import (
 
 	qt "github.com/frankban/quicktest"
 
-	"github.com/libsql/libsql-shell-go/internal/cmd"
+	"github.com/libsql/libsql-shell-go/internal/db"
+	"github.com/libsql/libsql-shell-go/internal/shell"
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 )
 
 type DbTestContext struct {
@@ -16,20 +19,57 @@ type DbTestContext struct {
 	*qt.C
 
 	dbPath string
+
+	db *db.Db
 }
 
 func NewTestContext(t *testing.T, dbPath string) *DbTestContext {
-	return &DbTestContext{T: t, C: qt.New(t), dbPath: dbPath}
+	db, err := db.NewDb(dbPath)
+	if err != nil {
+		t.Fatalf("Fail to create new db")
+	}
+
+	return &DbTestContext{T: t, C: qt.New(t), dbPath: dbPath, db: db}
+}
+
+func (tc *DbTestContext) Close() {
+	tc.db.Close()
 }
 
 func (tc *DbTestContext) Execute(statements string) (string, string, error) {
-	rootCmd := cmd.NewRootCmd()
-	return Execute(tc.T, rootCmd, "--exec", statements, tc.dbPath)
+	bufOut, bufErr, config := tc.createShellConfig("")
+	shellInstance, err := shell.NewShell(config, tc.db)
+	if err != nil {
+		tc.T.Fatalf("Fail to create new shell")
+	}
+
+	executionError := shellInstance.ExecuteCommandOrStatements(statements)
+	return strings.TrimSpace(bufOut.String()), strings.TrimSpace(bufErr.String()), executionError
 }
 
 func (tc *DbTestContext) ExecuteShell(commands []string) (outS string, errS string, err error) {
-	rootCmd := cmd.NewRootCmd()
-	return ExecuteWithInitialInput(tc.T, rootCmd, strings.Join(commands, "\n"), tc.dbPath, "--quiet")
+	bufOut, bufErr, config := tc.createShellConfig(strings.Join(commands, "\n"))
+	shellInstance, err := shell.NewShell(config, tc.db)
+	if err != nil {
+		tc.T.Fatalf("Fail to create new shell")
+	}
+
+	executionError := shellInstance.Run()
+	return strings.TrimSpace(bufOut.String()), strings.TrimSpace(bufErr.String()), executionError
+}
+
+func (tc *DbTestContext) createShellConfig(initialInput string) (bufOut *bytes.Buffer, bufErr *bytes.Buffer, config shell.ShellConfig) {
+	bufOut = new(bytes.Buffer)
+	bufErr = new(bytes.Buffer)
+	bufIn := new(bytes.Buffer)
+
+	_, err := bufIn.Write([]byte(initialInput))
+	if err != nil {
+		tc.T.Fatalf("Fail to write inside initial buffer")
+	}
+
+	config = shell.ShellConfig{InF: bufIn, OutF: bufOut, ErrF: bufErr, HistoryMode: enums.SingleHistory, QuietMode: true}
+	return
 }
 
 func (tc *DbTestContext) CreateEmptySimpleTable(tableName string) {

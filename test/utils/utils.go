@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Execute(t *testing.T, c *cobra.Command, args ...string) (string, string, error) {
-	return ExecuteWithInitialInput(t, c, "", args...)
+func ExecuteCobraCommand(t *testing.T, c *cobra.Command, args ...string) (string, string, error) {
+	return ExecuteCobraCommandWithInitialInput(t, c, "", args...)
 }
 
-func ExecuteWithInitialInput(t *testing.T, c *cobra.Command, initialInput string, args ...string) (string, string, error) {
+func ExecuteCobraCommandWithInitialInput(t *testing.T, c *cobra.Command, initialInput string, args ...string) (string, string, error) {
 	t.Helper()
 
 	bufOut := new(bytes.Buffer)

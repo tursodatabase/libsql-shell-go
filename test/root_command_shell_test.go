@@ -25,6 +25,10 @@ func (s *RootCommandShellSuite) SetupSuite() {
 	s.tc.DropAllTables()
 }
 
+func (s *RootCommandShellSuite) TearDownSuite() {
+	s.tc.Close()
+}
+
 func (s *RootCommandShellSuite) TearDownTest() {
 	s.tc.DropAllTables()
 }
