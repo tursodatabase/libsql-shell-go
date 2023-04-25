@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/libsql/libsql-shell-go/pkg/shell"
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 )
 
 type RootArgs struct {
@@ -28,7 +29,7 @@ func NewRootCmd() *cobra.Command {
 				InF:         cmd.InOrStdin(),
 				OutF:        cmd.OutOrStdout(),
 				ErrF:        cmd.ErrOrStderr(),
-				HistoryMode: shell.PerDatabaseHistory,
+				HistoryMode: enums.PerDatabaseHistory,
 				HistoryName: "libsql",
 				QuietMode:   rootArgs.quiet,
 			}
