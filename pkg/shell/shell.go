@@ -9,14 +9,15 @@ import (
 )
 
 type ShellConfig struct {
-	DbPath         string
-	InF            io.Reader
-	OutF           io.Writer
-	ErrF           io.Writer
-	HistoryMode    enums.HistoryMode
-	HistoryName    string
-	QuietMode      bool
-	WelcomeMessage *string
+	DbPath                    string
+	InF                       io.Reader
+	OutF                      io.Writer
+	ErrF                      io.Writer
+	HistoryMode               enums.HistoryMode
+	HistoryName               string
+	QuietMode                 bool
+	WelcomeMessage            *string
+	AfterDbConnectionCallback func()
 }
 
 func RunShell(config ShellConfig) error {
@@ -25,6 +26,10 @@ func RunShell(config ShellConfig) error {
 		return err
 	}
 	defer db.Close()
+
+	if config.AfterDbConnectionCallback != nil {
+		config.AfterDbConnectionCallback()
+	}
 
 	internalConfig := publicToInternalConfig(config)
 	shellInstance, err := shell.NewShell(internalConfig, db)
@@ -40,6 +45,10 @@ func RunShellLine(config ShellConfig, line string) error {
 		return err
 	}
 	defer db.Close()
+
+	if config.AfterDbConnectionCallback != nil {
+		config.AfterDbConnectionCallback()
+	}
 
 	internalConfig := publicToInternalConfig(config)
 	shellInstance, err := shell.NewShell(internalConfig, db)
