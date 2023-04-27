@@ -18,8 +18,8 @@ func GetHistoryFileBasedOnMode(dbPath string, mode enums.HistoryMode, historyNam
 	case enums.LocalHistory:
 		return sharedHistoryFileName
 	case enums.PerDatabaseHistory:
-		if parsedName, err := parseNameFromDbPath(dbPath); err == nil && parsedName != "" {
-			return getHistoryFileFullPath(historyName, getHistoryFileName(parsedName))
+		if host, err := getHostFromDbPath(dbPath); err == nil && host != "" {
+			return getHistoryFileFullPath(historyName, getHistoryFileName(host))
 		}
 	}
 
@@ -40,16 +40,16 @@ func getHistoryFolderPath(historyName string) string {
 	return path
 }
 
-func parseNameFromDbPath(dbPath string) (string, error) {
+func getHostFromDbPath(dbPath string) (string, error) {
 	if db.IsUrl(dbPath) {
 		url, err := url.Parse(dbPath)
 		if err != nil {
 			return "", err
 		}
-		if url.User == nil {
-			return "", &shellerrors.UrlDoesNotContainUserError{}
+		if url.Host == "" {
+			return "", &shellerrors.UrlDoesNotContainHostError{}
 		}
-		return url.User.String(), nil
+		return url.Host, nil
 	}
 
 	return getFileNameWithoutExtension(dbPath), nil
