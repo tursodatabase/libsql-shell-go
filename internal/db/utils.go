@@ -15,5 +15,5 @@ func IsValidTursoUrl(path string) bool {
 	if err != nil {
 		return false
 	}
-	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws"
+	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws" || url.Scheme == "http" || url.Scheme == "https"
 }
