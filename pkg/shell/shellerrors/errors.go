@@ -19,13 +19,13 @@ func (e *TransactionNotSupportedError) userError() string {
 	return "transactions are only supported in the shell using semicolons to separate each statement.\nFor example: \"BEGIN; [your SQL statements]; END\""
 }
 
-type UrlDoesNotContainUserError struct{}
+type UrlDoesNotContainHostError struct{}
 
-func (e *UrlDoesNotContainUserError) Error() string {
+func (e *UrlDoesNotContainHostError) Error() string {
 	return e.userError()
 }
-func (e *UrlDoesNotContainUserError) userError() string {
-	return "url does not contain user"
+func (e *UrlDoesNotContainHostError) userError() string {
+	return "url does not contain host"
 }
 
 type InvalidTursoProtocolError struct{}
