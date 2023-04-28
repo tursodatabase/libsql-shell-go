@@ -8,7 +8,6 @@ import (
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/xwb1989/sqlparser"
 
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
@@ -61,9 +60,40 @@ func (db *Db) Close() {
 	db.sqlDb.Close()
 }
 
+func splitStatementToPieces(statementsString string) (pieces []string, err error) {
+	pieces = make([]string, 0, 16)
+	embeddedChar := ' '
+	var stmt string
+	stmtBegin := 0
+	for i, char := range statementsString {
+		if char == embeddedChar && char != ' ' {
+			embeddedChar = ' '
+			continue
+		}
+		if (char == '\'' || char == '"') && embeddedChar == ' ' {
+			embeddedChar = char
+			continue
+		}
+		if embeddedChar != ' ' || char != ';' {
+			continue
+		}
+		stmt = strings.TrimSpace(statementsString[stmtBegin : i+1])
+		if len(stmt) < 1 || strings.HasPrefix(stmt, ";") {
+			stmtBegin = i + 1
+			continue
+		}
+		pieces = append(pieces, stmt)
+		stmtBegin = i + 1
+	}
+	if stmtBegin < len(statementsString) {
+		pieces = append(pieces, statementsString[stmtBegin:])
+	}
+	return pieces, nil
+}
+
 func (db *Db) ExecuteStatements(statementsString string) (StatementsResult, error) {
 
-	statements, err := sqlparser.SplitStatementToPieces(statementsString)
+	statements, err := splitStatementToPieces(statementsString)
 	if err != nil {
 		return StatementsResult{}, err
 	}
