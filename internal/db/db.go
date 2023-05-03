@@ -14,9 +14,19 @@ import (
 	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
 )
 
+type driver int
+
+const (
+	libsql driver = iota
+	sqlite3
+)
+
 type Db struct {
-	sqlDb *sql.DB
-	Path  string
+	Path string
+
+	sqlDb     *sql.DB
+	driver    driver
+	urlScheme string
 }
 
 type StatementsResult struct {
@@ -35,26 +45,31 @@ type rowResult struct {
 }
 
 func NewDb(dbPath string) (*Db, error) {
-	var sqlDb *sql.DB
 	var err error
+
+	var db = Db{Path: dbPath}
+
 	if IsUrl(dbPath) {
-		if IsValidTursoUrl(dbPath) {
-			sqlDb, err = sql.Open("libsql", dbPath)
+		var validTursoUrl bool
+		if validTursoUrl, db.urlScheme = IsValidTursoUrl(dbPath); validTursoUrl {
+			db.driver = libsql
+			db.sqlDb, err = sql.Open("libsql", dbPath)
 		} else {
 			return nil, &shellerrors.InvalidTursoProtocolError{}
 		}
 	} else {
-		sqlDb, err = sql.Open("sqlite3", dbPath)
+		db.driver = sqlite3
+		db.sqlDb, err = sql.Open("sqlite3", dbPath)
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	if err = sqlDb.Ping(); err != nil {
+	if err = db.sqlDb.Ping(); err != nil {
 		return nil, err
 	}
 
-	return &Db{sqlDb: sqlDb, Path: dbPath}, nil
+	return &db, nil
 }
 
 func (db *Db) Close() {
@@ -62,8 +77,7 @@ func (db *Db) Close() {
 }
 
 func (db *Db) ExecuteStatements(statementsString string) (StatementsResult, error) {
-
-	queries, err := sqlparser.SplitStatementToPieces(statementsString)
+	queries, err := db.prepareStatementsIntoQueries(statementsString)
 	if err != nil {
 		return StatementsResult{}, err
 	}
@@ -117,6 +131,22 @@ func (db *Db) executeQuery(query string, statementResultCh chan StatementResult)
 	defer rows.Close()
 
 	return readQueryResults(rows, statementResultCh)
+}
+
+func (db *Db) prepareStatementsIntoQueries(statementsString string) ([]string, error) {
+	// sqlite3 driver just run the first query that we send. So we must split the statements and send them one by one
+	// e.g If we execute query "select 1; select 2;" with it, just the first one ("select 1;") would be executed
+	//
+	// libsql driver doesn't accept multiple statements if using websocket connection
+	mustSplitStatementsIntoMultipleQueries :=
+		db.driver == sqlite3 ||
+			db.driver == libsql && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
+
+	if mustSplitStatementsIntoMultipleQueries {
+		return sqlparser.SplitStatementToPieces(statementsString)
+	}
+
+	return []string{statementsString}, nil
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {
