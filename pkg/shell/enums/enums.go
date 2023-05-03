@@ -10,7 +10,7 @@ const (
 type HistoryMode int
 
 const (
-	SingleHistory      HistoryMode = 0
-	PerDatabaseHistory HistoryMode = 1
-	LocalHistory       HistoryMode = 2
+	SingleHistory HistoryMode = iota
+	PerDatabaseHistory
+	LocalHistory
 )
