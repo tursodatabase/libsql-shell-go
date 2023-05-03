@@ -10,10 +10,10 @@ func IsUrl(path string) bool {
 	return url.Scheme != ""
 }
 
-func IsValidTursoUrl(path string) bool {
+func IsValidTursoUrl(path string) (bool, string) {
 	url, err := url.ParseRequestURI(path)
 	if err != nil {
-		return false
+		return false, ""
 	}
-	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws" || url.Scheme == "http" || url.Scheme == "https"
+	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws" || url.Scheme == "http" || url.Scheme == "https", url.Scheme
 }
