@@ -177,21 +177,10 @@ func getColumnTypes(rows *sql.Rows) ([]reflect.Type, error) {
 	return types, nil
 }
 
-func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResult) (queryEndedWithoutError bool) {
-	rowsEndedWithoutErrorCh := make(chan bool)
-	defer close(rowsEndedWithoutErrorCh)
-
+func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResult) (shouldContinue bool) {
 	hasResultSetToRead := true
 	for hasResultSetToRead {
-		statementResult := readQueryResultSet(queryRows, rowsEndedWithoutErrorCh)
-		statementResultCh <- statementResult
-
-		if statementResult.Err != nil {
-			return false
-		}
-
-		shouldContinue := <-rowsEndedWithoutErrorCh
-		if !shouldContinue {
+		if shouldContinue := readQueryResultSet(queryRows, statementResultCh); !shouldContinue {
 			return false
 		}
 
@@ -206,15 +195,17 @@ func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResul
 	return true
 }
 
-func readQueryResultSet(queryRows *sql.Rows, rowsEndedWithoutErrorCh chan bool) StatementResult {
+func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementResult) (shouldContinue bool) {
 	columnNames, err := getColumnNames(queryRows)
 	if err != nil {
-		return StatementResult{Err: err}
+		statementResultCh <- StatementResult{Err: err}
+		return false
 	}
 
 	columnTypes, err := getColumnTypes(queryRows)
 	if err != nil {
-		return StatementResult{Err: err}
+		statementResultCh <- StatementResult{Err: err}
+		return false
 	}
 
 	columnNamesLen := len(columnNames)
@@ -228,33 +219,29 @@ func readQueryResultSet(queryRows *sql.Rows, rowsEndedWithoutErrorCh chan bool) 
 	}
 
 	rowCh := make(chan rowResult)
-	go func() {
-		defer close(rowCh)
+	defer close(rowCh)
 
-		for queryRows.Next() {
-			err = queryRows.Scan(columnPointers...)
-			if err != nil {
-				rowCh <- rowResult{Err: err}
-				rowsEndedWithoutErrorCh <- false
-				return
-			}
+	statementResultCh <- StatementResult{ColumnNames: columnNames, RowCh: rowCh}
 
-			rowData := make([]interface{}, len(columnTypes))
-			for i, ptr := range columnPointers {
-				val := reflect.ValueOf(ptr).Elem()
-				rowData[i] = val.Interface()
-			}
-			rowCh <- rowResult{Row: rowData}
-		}
-
-		if err := queryRows.Err(); err != nil {
+	for queryRows.Next() {
+		err = queryRows.Scan(columnPointers...)
+		if err != nil {
 			rowCh <- rowResult{Err: err}
-			rowsEndedWithoutErrorCh <- false
-			return
+			return false
 		}
 
-		rowsEndedWithoutErrorCh <- true
-	}()
+		rowData := make([]interface{}, len(columnTypes))
+		for i, ptr := range columnPointers {
+			val := reflect.ValueOf(ptr).Elem()
+			rowData[i] = val.Interface()
+		}
+		rowCh <- rowResult{Row: rowData}
+	}
 
-	return StatementResult{ColumnNames: columnNames, RowCh: rowCh}
+	if err := queryRows.Err(); err != nil {
+		rowCh <- rowResult{Err: err}
+		return false
+	}
+
+	return true
 }
