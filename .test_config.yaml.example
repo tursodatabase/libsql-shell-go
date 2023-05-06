@@ -1,1 +1,2 @@
 turso_db_path: "<your-turso-db-test>"
+skip_turso_tests: false
