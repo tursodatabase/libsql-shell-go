@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"io"
 	"reflect"
 	"strings"
@@ -65,11 +66,19 @@ func NewDb(dbPath string) (*Db, error) {
 		return nil, err
 	}
 
-	if err = db.sqlDb.Ping(); err != nil {
+	if err = db.testConnection(); err != nil {
 		return nil, err
 	}
 
 	return &db, nil
+}
+
+func (db *Db) testConnection() error {
+	_, err := db.sqlDb.Exec("SELECT 1;")
+	if err != nil {
+		return fmt.Errorf("failed to connect to database")
+	}
+	return nil
 }
 
 func (db *Db) Close() {
