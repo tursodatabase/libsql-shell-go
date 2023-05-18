@@ -3,6 +3,7 @@ module github.com/libsql/libsql-shell-go
 go 1.20
 
 require (
+	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9
 	github.com/fatih/color v1.14.1
 	github.com/frankban/quicktest v1.14.4
 	github.com/go-playground/validator/v10 v10.11.2
@@ -11,13 +12,13 @@ require (
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.0
 	github.com/libsql/libsql-client-go v0.0.0-20230516123308-049b954a6bbd
+	github.com/libsql/sqlite-antlr4-parser v0.0.0-20230512205400-b2348f0d1196
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
 )
 
 require (
-	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -25,7 +26,6 @@ require (
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
-	github.com/libsql/sqlite-antlr4-parser v0.0.0-20230512205400-b2348f0d1196 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
