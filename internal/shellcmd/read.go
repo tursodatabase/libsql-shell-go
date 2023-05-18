@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,6 @@ var readCmd = &cobra.Command{
 			return err
 		}
 
-		return config.Db.ExecuteAndPrintStatements(strings.TrimSpace(string(content)), config.OutF, false, config.GetMode())
+		return config.Db.ExecuteAndPrintStatements(strings.TrimSpace(string(content)), config.OutF, false, enums.TABLE_MODE)
 	},
 }

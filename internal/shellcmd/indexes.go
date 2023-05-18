@@ -3,6 +3,7 @@ package shellcmd
 import (
 	"fmt"
 
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,6 @@ var indexesCmd = &cobra.Command{
 			schemaStatement = "SELECT name FROM sqlite_master WHERE type='index'"
 		}
 
-		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true, config.GetMode())
+		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true, enums.TABLE_MODE)
 	},
 }

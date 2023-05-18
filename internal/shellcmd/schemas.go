@@ -3,6 +3,7 @@ package shellcmd
 import (
 	"fmt"
 
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,6 @@ var schemaCmd = &cobra.Command{
 
 		schemaStatement += " order by name"
 
-		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true, config.GetMode())
+		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true, enums.TABLE_MODE)
 	},
 }

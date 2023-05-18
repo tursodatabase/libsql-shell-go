@@ -3,6 +3,7 @@ package shellcmd
 import (
 	"fmt"
 
+	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,6 @@ var tableCmd = &cobra.Command{
 			and name != 'libsql_wasm_func_table'
 			order by name`
 
-		return config.Db.ExecuteAndPrintStatements(tableStatement, config.OutF, true, config.GetMode())
+		return config.Db.ExecuteAndPrintStatements(tableStatement, config.OutF, true, enums.TABLE_MODE)
 	},
 }
