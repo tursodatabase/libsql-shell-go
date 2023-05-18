@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/libsql/libsql-shell-go/internal/shellcmd"
+	"github.com/libsql/libsql-shell-go/internal/suggester"
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/spf13/cobra"
 )
@@ -136,8 +137,29 @@ func (sh *Shell) resetState() error {
 	return nil
 }
 
+type shellAutoCompleter struct {
+	suggestCompletion func(input string) []string
+}
+
+func (sac *shellAutoCompleter) Do(line []rune, pos int) (newLine [][]rune, lengh int) {
+	suggestions := sac.suggestCompletion(string(line[0:pos]))
+
+	if suggestions == nil {
+		return nil, 0
+	}
+
+	runeSuggestions := make([][]rune, 0, len(suggestions))
+	for _, suggestion := range suggestions {
+		runeSuggestions = append(runeSuggestions, []rune(suggestion))
+	}
+
+	return runeSuggestions, pos
+}
+
 func (sh *Shell) newReadline() (*readline.Instance, error) {
 	historyFile := GetHistoryFileBasedOnMode(sh.db.Path, sh.config.HistoryMode, sh.config.HistoryName)
+
+	autoCompleter := &shellAutoCompleter{suggestCompletion: suggester.SuggestCompletion}
 
 	return readline.NewEx(&readline.Config{
 		Prompt:          sh.promptFmt(promptNewStatement),
@@ -147,6 +169,7 @@ func (sh *Shell) newReadline() (*readline.Instance, error) {
 		Stdin:           io.NopCloser(sh.config.InF),
 		Stdout:          sh.config.OutF,
 		Stderr:          sh.config.ErrF,
+		AutoComplete:    autoCompleter,
 	})
 }
 
