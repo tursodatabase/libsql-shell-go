@@ -24,6 +24,9 @@ func SuggestCompletion(currentInput string) []string {
 		uppercasedLastInputToken := strings.ToUpper(lastInputToken.GetText())
 
 		if suggestion, isPrefix := strings.CutPrefix(expectedLiteralTokenString, uppercasedLastInputToken); isPrefix {
+			if suggestion == "" {
+				continue
+			}
 			if suggestionsShouldBeLowerCase {
 				suggestion = strings.ToLower(suggestion)
 			} else {
