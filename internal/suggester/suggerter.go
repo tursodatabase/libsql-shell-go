@@ -55,10 +55,33 @@ func getLastInputTokenAndExpectedTokens(currentInput string) (lastInputToken ant
 		}
 	}()
 
-	p.Parse()
+	tree := p.Parse()
 
-	return tokenStream.getLastInputTokenAndExpectedTokens()
+	lastInputToken, expectedTokens = tokenStream.getLastInputTokenAndExpectedTokens()
 
+	lastInputTokenRules := getTokenRules(tree, lastInputToken)
+
+	expectedTokens = filterExpectedTokensBasedOnTokenRules(lastInputTokenRules, expectedTokens)
+
+	return lastInputToken, expectedTokens
+}
+
+var expectedTokensFilterByRule = map[int]func(expectedTokens []int) []int{
+	sqliteparser.SQLiteParserRULE_any_name: noExpectedToken,
+}
+
+func filterExpectedTokensBasedOnTokenRules(tokenRules []int, expectedTokens []int) []int {
+	for _, tokenRule := range tokenRules {
+		if filterFunc, ok := expectedTokensFilterByRule[tokenRule]; ok {
+			return filterFunc(expectedTokens)
+		}
+	}
+
+	return expectedTokens
+}
+
+func noExpectedToken(_ []int) []int {
+	return make([]int, 0)
 }
 
 func getLiteralTokenStrings(tokens []int) []string {
