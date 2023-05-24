@@ -40,6 +40,10 @@ Git Hooks are shell scripts that run automatically before or after Git executes 
 ./scripts/git/install-git-hooks.sh
 ```
 
+### Install golangci-lint
+
+The above git hooks require `golangci-lint` in your PATH. [Install golangci-lint](https://golangci-lint.run/usage/install/).
+
 ### Configure tests
 
 The tests are configured through `.test_config.yaml` file. Copy `.test_config.yaml.example` to create your `.test_config.yaml` and see below the description for each field:
