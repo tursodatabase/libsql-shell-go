@@ -24,6 +24,10 @@ type TestConfig struct {
 	TursoDbPath    string `koanf:"turso_db_path" validate:"required_if=SkipTursoTests false"`
 }
 
+func newTestConfig() *TestConfig {
+	return &TestConfig{SkipTursoTests: true}
+}
+
 var alreadyReadTestConfig *TestConfig
 
 func GetTestConfig(t *testing.T) TestConfig {
@@ -32,11 +36,11 @@ func GetTestConfig(t *testing.T) TestConfig {
 	}
 
 	readTestConfig := readTestConfig(t)
-	alreadyReadTestConfig = &readTestConfig
+	alreadyReadTestConfig = readTestConfig
 	return *alreadyReadTestConfig
 }
 
-func readTestConfig(t *testing.T) TestConfig {
+func readTestConfig(t *testing.T) *TestConfig {
 	var koanfInstance = koanf.New(".")
 	loadConfigFileIfExists(t, koanfInstance)
 	loadEnvironmentVariables(t, koanfInstance)
@@ -63,8 +67,8 @@ func loadEnvironmentVariables(t *testing.T, koanfInstance *koanf.Koanf) {
 	}
 }
 
-func unmarshalAndValidateConfigs(t *testing.T, koanfInstance *koanf.Koanf) TestConfig {
-	testConfig := TestConfig{}
+func unmarshalAndValidateConfigs(t *testing.T, koanfInstance *koanf.Koanf) *TestConfig {
+	testConfig := newTestConfig()
 	if err := koanfInstance.Unmarshal("", &testConfig); err != nil {
 		t.Fatalf("Unable to unmarshal test configs. Error: %v", err)
 	}
