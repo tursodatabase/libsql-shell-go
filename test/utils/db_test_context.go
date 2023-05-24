@@ -28,6 +28,9 @@ func NewTestContext(t *testing.T, dbPath string) *DbTestContext {
 	if err != nil {
 		t.Fatalf("Fail to create new db")
 	}
+	if err := db.TestConnection(); err != nil {
+		db = nil
+	}
 
 	return &DbTestContext{T: t, C: qt.New(t), dbPath: dbPath, db: db}
 }

@@ -65,15 +65,10 @@ func NewDb(dbPath string) (*Db, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if err = db.testConnection(); err != nil {
-		return nil, err
-	}
-
 	return &db, nil
 }
 
-func (db *Db) testConnection() error {
+func (db *Db) TestConnection() error {
 	_, err := db.sqlDb.Exec("SELECT 1;")
 	if err != nil {
 		return fmt.Errorf("failed to connect to database")
