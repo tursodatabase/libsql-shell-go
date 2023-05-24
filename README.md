@@ -27,7 +27,7 @@ To start a shell for **Turso** databases, you need your database URL and a datab
 
 Then, to connect to Turso database you need to pass the database token as query parameter of URL, like the following command:
 ```sh
-go run ./cmd/libsql-shell/main.go libsql://<db_name>-<username>.turso.io/?jwt=<db_token>`
+go run ./cmd/libsql-shell/main.go libsql://<db_name>-<username>.turso.io/?authToken=<db_token>`
 ```
 
 ## Development
