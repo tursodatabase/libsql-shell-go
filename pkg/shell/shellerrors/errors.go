@@ -28,11 +28,11 @@ func (e *UrlDoesNotContainHostError) userError() string {
 	return "url does not contain host"
 }
 
-type InvalidTursoProtocolError struct{}
+type ProtocolError struct{}
 
-func (e *InvalidTursoProtocolError) Error() string {
+func (e *ProtocolError) Error() string {
 	return e.userError()
 }
-func (e *InvalidTursoProtocolError) userError() string {
-	return "invalid turso protocol. valid protocols are libsql://, wss:// and ws://"
+func (e *ProtocolError) userError() string {
+	return "invalid sqld protocol. valid protocols are libsql://, wss:// and ws://"
 }

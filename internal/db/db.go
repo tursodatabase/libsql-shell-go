@@ -56,7 +56,7 @@ func NewDb(dbPath string) (*Db, error) {
 			db.driver = libsql
 			db.sqlDb, err = sql.Open("libsql", dbPath)
 		} else {
-			return nil, &shellerrors.InvalidTursoProtocolError{}
+			return nil, &shellerrors.ProtocolError{}
 		}
 	} else {
 		db.driver = sqlite3
