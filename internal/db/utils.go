@@ -10,7 +10,7 @@ func IsUrl(path string) bool {
 	return url.Scheme != ""
 }
 
-func IsValidTursoUrl(path string) (bool, string) {
+func IsValidSqldUrl(path string) (bool, string) {
 	url, err := url.ParseRequestURI(path)
 	if err != nil {
 		return false, ""
