@@ -2,6 +2,9 @@ package shell
 
 import (
 	"io"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/libsql/libsql-shell-go/internal/shell"
@@ -21,6 +24,8 @@ type ShellConfig struct {
 }
 
 func RunShell(config ShellConfig) error {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	db, err := db.NewDb(config.DbPath)
 	if err != nil {
 		return err
@@ -36,10 +41,18 @@ func RunShell(config ShellConfig) error {
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		for range signals {
+			shellInstance.CancelQuery()
+		}
+	}()
 	return shellInstance.Run()
 }
 
 func RunShellLine(config ShellConfig, line string) error {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	db, err := db.NewDb(config.DbPath)
 	if err != nil {
 		return err
@@ -55,6 +68,11 @@ func RunShellLine(config ShellConfig, line string) error {
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		<-signals
+		shellInstance.CancelQuery()
+	}()
 
 	return shellInstance.ExecuteCommandOrStatements(line)
 }

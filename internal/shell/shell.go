@@ -76,10 +76,6 @@ func NewShell(config ShellConfig, db *db.Db) (*Shell, error) {
 }
 
 func (sh *Shell) Run() error {
-	err := sh.resetState()
-	if err != nil {
-		return err
-	}
 	defer sh.state.readline.Close()
 
 	if !sh.config.QuietMode {
@@ -125,7 +121,6 @@ func (sh *Shell) resetState() error {
 	if err != nil {
 		return err
 	}
-	sh.state.readline.CaptureExitSignal()
 
 	sh.state.insideMultilineStatement = false
 	sh.state.statementParts = make([]string, 0)
@@ -221,4 +216,8 @@ func (sh *Shell) getWelcomeMessage() string {
 		return DEFAULT_WELCOME_MESSAGE
 	}
 	return *sh.config.WelcomeMessage
+}
+
+func (sh *Shell) CancelQuery() {
+	sh.db.CancelQuery()
 }
