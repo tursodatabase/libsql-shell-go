@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -28,6 +29,8 @@ type Db struct {
 	sqlDb     *sql.DB
 	driver    driver
 	urlScheme string
+
+	cancelRunningQuery func()
 }
 
 type StatementsResult struct {
@@ -123,7 +126,10 @@ func (db *Db) executeQuery(query string, statementResultCh chan StatementResult)
 		return true
 	}
 
-	rows, err := db.sqlDb.Query(query)
+	ctx, cancel := context.WithCancel(context.Background())
+	db.cancelRunningQuery = cancel
+
+	rows, err := db.sqlDb.QueryContext(ctx, query)
 	if err != nil {
 		if strings.Contains(err.Error(), "interactive transaction not allowed in HTTP queries") {
 			err = &shellerrors.TransactionNotSupportedError{}
@@ -248,4 +254,10 @@ func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementRes
 	}
 
 	return true
+}
+
+func (db *Db) CancelQuery() {
+	if db.cancelRunningQuery != nil {
+		db.cancelRunningQuery()
+	}
 }
