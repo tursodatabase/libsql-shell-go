@@ -20,12 +20,12 @@ const (
 )
 
 type TestConfig struct {
-	SkipTursoTests bool   `koanf:"skip_turso_tests"`
-	TursoDbPath    string `koanf:"turso_db_path" validate:"required_if=SkipTursoTests false"`
+	SkipSqldTests bool   `koanf:"skip_sqld_tests"`
+	SqldDbPath    string `koanf:"sqld_db_path" validate:"required_if=SkipSqldTests false"`
 }
 
 func newTestConfig() *TestConfig {
-	return &TestConfig{SkipTursoTests: true}
+	return &TestConfig{SkipSqldTests: true}
 }
 
 var alreadyReadTestConfig *TestConfig

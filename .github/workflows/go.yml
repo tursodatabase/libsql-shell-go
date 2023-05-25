@@ -40,4 +40,4 @@ jobs:
       - name: Test
         run: go test -v ./...
         env:
-          TEST_CONFIG_SKIP_TURSO_TESTS: 1
+          TEST_CONFIG_SKIP_SQLD_TESTS: 1
