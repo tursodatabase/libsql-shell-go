@@ -120,6 +120,9 @@ func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer,
 
 	err = PrintStatementsResult(result, outF, withoutHeader, printMode)
 	if err != nil {
+		if strings.Contains(err.Error(), "context canceled") {
+			err = &shellerrors.CancelQueryContextError{}
+		}
 		return err
 	}
 
