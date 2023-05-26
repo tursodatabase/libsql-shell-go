@@ -26,7 +26,7 @@ func RunShell(config ShellConfig) error {
 		return err
 	}
 	if err := db.TestConnection(); err != nil {
-		db = nil
+		return err
 	}
 	defer db.Close()
 
