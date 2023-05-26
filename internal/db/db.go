@@ -43,9 +43,27 @@ type StatementResult struct {
 	Err         error
 }
 
+func newStatementResult(columnNames []string, rowCh chan rowResult) *StatementResult {
+	return &StatementResult{ColumnNames: columnNames, RowCh: rowCh}
+}
+
+func newStatementResultWithError(err error) *StatementResult {
+	treatedErr := treatDbError(err)
+	return &StatementResult{Err: treatedErr}
+}
+
 type rowResult struct {
 	Row []interface{}
 	Err error
+}
+
+func newRowResult(row []interface{}) *rowResult {
+	return &rowResult{Row: row}
+}
+
+func newRowResultWithError(err error) *rowResult {
+	treatedErr := treatDbError(err)
+	return &rowResult{Err: treatedErr}
 }
 
 func NewDb(dbPath string) (*Db, error) {
@@ -115,9 +133,6 @@ func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer,
 
 	err = PrintStatementsResult(result, outF, withoutHeader, printMode)
 	if err != nil {
-		if strings.Contains(err.Error(), "context canceled") {
-			err = &shellerrors.CancelQueryContextError{}
-		}
 		return err
 	}
 
@@ -134,13 +149,11 @@ func (db *Db) executeQuery(query string, statementResultCh chan StatementResult)
 
 	rows, err := db.sqlDb.QueryContext(ctx, query)
 	if err != nil {
-		if strings.Contains(err.Error(), "interactive transaction not allowed in HTTP queries") {
-			err = &shellerrors.TransactionNotSupportedError{}
-		}
+		statementResultCh <- *newStatementResultWithError(err)
 
-		statementResultCh <- StatementResult{Err: err}
 		return false
 	}
+
 	defer rows.Close()
 
 	return readQueryResults(rows, statementResultCh)
@@ -201,7 +214,7 @@ func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResul
 	}
 
 	if err := queryRows.Err(); err != nil {
-		statementResultCh <- StatementResult{Err: err}
+		statementResultCh <- *newStatementResultWithError(err)
 		return false
 	}
 
@@ -211,13 +224,13 @@ func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResul
 func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementResult) (shouldContinue bool) {
 	columnNames, err := getColumnNames(queryRows)
 	if err != nil {
-		statementResultCh <- StatementResult{Err: err}
+		statementResultCh <- *newStatementResultWithError(err)
 		return false
 	}
 
 	columnTypes, err := getColumnTypes(queryRows)
 	if err != nil {
-		statementResultCh <- StatementResult{Err: err}
+		statementResultCh <- *newStatementResultWithError(err)
 		return false
 	}
 
@@ -234,12 +247,12 @@ func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementRes
 	rowCh := make(chan rowResult)
 	defer close(rowCh)
 
-	statementResultCh <- StatementResult{ColumnNames: columnNames, RowCh: rowCh}
+	statementResultCh <- *newStatementResult(columnNames, rowCh)
 
 	for queryRows.Next() {
 		err = queryRows.Scan(columnPointers...)
 		if err != nil {
-			rowCh <- rowResult{Err: err}
+			rowCh <- *newRowResultWithError(err)
 			return false
 		}
 
@@ -248,11 +261,11 @@ func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementRes
 			val := reflect.ValueOf(ptr).Elem()
 			rowData[i] = val.Interface()
 		}
-		rowCh <- rowResult{Row: rowData}
+		rowCh <- *newRowResult(rowData)
 	}
 
 	if err := queryRows.Err(); err != nil {
-		rowCh <- rowResult{Err: err}
+		rowCh <- *newRowResultWithError(err)
 		return false
 	}
 
@@ -263,4 +276,17 @@ func (db *Db) CancelQuery() {
 	if db.cancelRunningQuery != nil {
 		db.cancelRunningQuery()
 	}
+}
+
+func treatDbError(originalErr error) error {
+	err := originalErr
+
+	if strings.Contains(err.Error(), "interactive transaction not allowed in HTTP queries") {
+		err = &shellerrors.TransactionNotSupportedError{}
+	}
+	if strings.Contains(err.Error(), "context canceled") {
+		err = &shellerrors.CancelQueryContextError{}
+	}
+
+	return err
 }
