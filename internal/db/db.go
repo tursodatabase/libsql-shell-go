@@ -51,12 +51,12 @@ func NewDb(dbPath string) (*Db, error) {
 	var db = Db{Path: dbPath}
 
 	if IsUrl(dbPath) {
-		var validTursoUrl bool
-		if validTursoUrl, db.urlScheme = IsValidTursoUrl(dbPath); validTursoUrl {
+		var validSqldUrl bool
+		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbPath); validSqldUrl {
 			db.driver = libsql
 			db.sqlDb, err = sql.Open("libsql", dbPath)
 		} else {
-			return nil, &shellerrors.InvalidTursoProtocolError{}
+			return nil, &shellerrors.ProtocolError{}
 		}
 	} else {
 		db.driver = sqlite3

@@ -1,2 +1,2 @@
-turso_db_path: "<your-turso-db-test>"
-skip_turso_tests: false
+sqld_db_path: "<your-sqld-db-test>"
+skip_sqld_tests: false

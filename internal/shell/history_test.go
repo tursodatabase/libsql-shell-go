@@ -81,8 +81,8 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsEmpty_Expec
 func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsHttpUrlWithUser_ExpectSpecificGlobalHistory(t *testing.T) {
 	c := qt.New(t)
 
-	dbPath := "https://username:password@database-username.turso.io"
-	expectedPath := getExpectedHistoryFullPath("database-username.turso.io")
+	dbPath := "https://username:password@database-username.domain-name"
+	expectedPath := getExpectedHistoryFullPath("database-username.domain-name")
 	result := shell.GetHistoryFileBasedOnMode(dbPath, enums.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
@@ -91,8 +91,8 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsHttpUrlWith
 func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsHttpUrlWithoutUser_ExpectSpecificGlobalHistory(t *testing.T) {
 	c := qt.New(t)
 
-	dbPath := "https://database-username.turso.io"
-	expectedPath := getExpectedHistoryFullPath("database-username.turso.io")
+	dbPath := "https://database-username.domain-name"
+	expectedPath := getExpectedHistoryFullPath("database-username.domain-name")
 	result := shell.GetHistoryFileBasedOnMode(dbPath, enums.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
@@ -101,8 +101,8 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsHttpUrlWith
 func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsLibsqlUrl_ExpectSpecificGlobalHistory(t *testing.T) {
 	c := qt.New(t)
 
-	dbPath := "libsql://database-username.turso.io/?jwt=some_token"
-	expectedPath := getExpectedHistoryFullPath("database-username.turso.io")
+	dbPath := "libsql://database-username.domain-name/?jwt=some_token"
+	expectedPath := getExpectedHistoryFullPath("database-username.domain-name")
 	result := shell.GetHistoryFileBasedOnMode(dbPath, enums.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
@@ -111,8 +111,8 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsLibsqlUrl_E
 func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsWssUrl_ExpectSpecificGlobalHistory(t *testing.T) {
 	c := qt.New(t)
 
-	dbPath := "wss://database-username.turso.io/?jwt=some_token"
-	expectedPath := getExpectedHistoryFullPath("database-username.turso.io")
+	dbPath := "wss://database-username.domain-name/?jwt=some_token"
+	expectedPath := getExpectedHistoryFullPath("database-username.domain-name")
 	result := shell.GetHistoryFileBasedOnMode(dbPath, enums.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)
@@ -121,8 +121,8 @@ func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsWssUrl_Expe
 func TestGetHistoryFileBasedOnMode_GivenPerDatabaseHistory_WhenPathIsWsUrl_ExpectSpecificGlobalHistory(t *testing.T) {
 	c := qt.New(t)
 
-	dbPath := "ws://database-username.turso.io/?jwt=some_token"
-	expectedPath := getExpectedHistoryFullPath("database-username.turso.io")
+	dbPath := "ws://database-username.domain-name/?jwt=some_token"
+	expectedPath := getExpectedHistoryFullPath("database-username.domain-name")
 	result := shell.GetHistoryFileBasedOnMode(dbPath, enums.PerDatabaseHistory, historyName)
 
 	c.Assert(result, qt.Equals, expectedPath)

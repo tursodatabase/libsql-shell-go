@@ -278,11 +278,11 @@ func TestDBRootCommandShellSuite_WhenDbIsSQLite(t *testing.T) {
 	suite.Run(t, NewDBRootCommandShellSuite(t.TempDir()+"test.sqlite"))
 }
 
-func TestDBRootCommandShellSuite_WhenDbIsTurso(t *testing.T) {
+func TestDBRootCommandShellSuite_WhenDbIsSqld(t *testing.T) {
 	testConfig := utils.GetTestConfig(t)
-	if testConfig.SkipTursoTests {
-		t.Skip("Skipping Turso tests due configuration")
+	if testConfig.SkipSqldTests {
+		t.Skip("Skipping SQLD tests due configuration")
 	}
 
-	suite.Run(t, NewDBRootCommandShellSuite(testConfig.TursoDbPath))
+	suite.Run(t, NewDBRootCommandShellSuite(testConfig.SqldDbPath))
 }
