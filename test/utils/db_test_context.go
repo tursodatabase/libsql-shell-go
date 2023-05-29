@@ -26,10 +26,10 @@ type DbTestContext struct {
 func NewTestContext(t *testing.T, dbPath string) *DbTestContext {
 	db, err := db.NewDb(dbPath)
 	if err != nil {
-		t.Fatalf("Fail to create new db")
+		t.Fatalf("Fail to create new db. err: %v", err)
 	}
 	if err := db.TestConnection(); err != nil {
-		db = nil
+		t.Fatalf("Fail to test connection. err: %v", err)
 	}
 
 	return &DbTestContext{T: t, C: qt.New(t), dbPath: dbPath, db: db}
