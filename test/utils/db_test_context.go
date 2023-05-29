@@ -23,8 +23,8 @@ type DbTestContext struct {
 	db *db.Db
 }
 
-func NewTestContext(t *testing.T, dbPath string) *DbTestContext {
-	db, err := db.NewDb(dbPath)
+func NewTestContext(t *testing.T, dbPath string, authToken string) *DbTestContext {
+	db, err := db.NewDb(dbPath, authToken)
 	if err != nil {
 		t.Fatalf("Fail to create new db. err: %v", err)
 	}

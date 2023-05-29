@@ -12,8 +12,9 @@ import (
 type DBRootCommandShellSuite struct {
 	suite.Suite
 
-	dbPath string
-	tc     *utils.DbTestContext
+	dbPath    string
+	authToken string
+	tc        *utils.DbTestContext
 }
 
 func NewDBRootCommandShellSuite(dbPath string) *DBRootCommandShellSuite {
@@ -21,7 +22,7 @@ func NewDBRootCommandShellSuite(dbPath string) *DBRootCommandShellSuite {
 }
 
 func (s *DBRootCommandShellSuite) SetupSuite() {
-	s.tc = utils.NewTestContext(s.T(), s.dbPath)
+	s.tc = utils.NewTestContext(s.T(), s.dbPath, s.authToken)
 	s.tc.DropAllTables()
 }
 
