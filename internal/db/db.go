@@ -92,7 +92,7 @@ func NewDb(dbPath string) (*Db, error) {
 func (db *Db) TestConnection() error {
 	_, err := db.sqlDb.Exec("SELECT 1;")
 	if err != nil {
-		return fmt.Errorf("failed to connect to database")
+		return fmt.Errorf("failed to connect to database. err: %v", err)
 	}
 	return nil
 }
