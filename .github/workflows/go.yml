@@ -13,6 +13,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      sqld:
+        image: ghcr.io/libsql/sqld:latest
+        ports:
+          - 8080:8080
+
     steps:
       - uses: actions/checkout@v3
 
@@ -40,4 +47,5 @@ jobs:
       - name: Test
         run: go test -v ./...
         env:
-          TEST_CONFIG_SKIP_SQLD_TESTS: 1
+          TEST_CONFIG_SQLD_DB_PATH: "http://127.0.0.1:8080"
+          TEST_CONFIG_SKIP_SQLD_TESTS: 0
