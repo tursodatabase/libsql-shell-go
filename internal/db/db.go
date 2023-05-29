@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"net/url"
 	"reflect"
 	"strings"
 
@@ -66,16 +67,34 @@ func newRowResultWithError(err error) *rowResult {
 	return &rowResult{Err: treatedErr}
 }
 
-func NewDb(dbPath string) (*Db, error) {
+func addAuthTokenAsQueryParameter(dbPath string, authToken string) (string, error) {
+	dbUrl, err := url.Parse(dbPath)
+	if err != nil {
+		return "", err
+	}
+	if authToken != "" {
+		urlValues := dbUrl.Query()
+		urlValues.Set("authToken", authToken)
+		dbUrl.RawQuery = urlValues.Encode()
+	}
+
+	return dbUrl.String(), nil
+}
+
+func NewDb(dbPath string, authToken string) (*Db, error) {
 	var err error
+	dbUrl, err := addAuthTokenAsQueryParameter(dbPath, authToken)
+	if err != nil {
+		return nil, err
+	}
 
-	var db = Db{Path: dbPath}
+	var db = Db{Path: dbUrl}
 
-	if IsUrl(dbPath) {
+	if IsUrl(dbUrl) {
 		var validSqldUrl bool
-		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbPath); validSqldUrl {
+		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUrl); validSqldUrl {
 			db.driver = libsql
-			db.sqlDb, err = sql.Open("libsql", dbPath)
+			db.sqlDb, err = sql.Open("libsql", dbUrl)
 		} else {
 			return nil, &shellerrors.ProtocolError{}
 		}

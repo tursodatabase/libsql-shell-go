@@ -1,2 +1,3 @@
 sqld_db_path: "<your-sqld-db-test>"
+auth_token: "<your-jwt-token>"
 skip_sqld_tests: false

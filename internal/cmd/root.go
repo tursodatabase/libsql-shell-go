@@ -14,6 +14,7 @@ import (
 type RootArgs struct {
 	statements string
 	quiet      bool
+	authToken  string
 }
 
 func NewRootCmd() *cobra.Command {
@@ -32,6 +33,7 @@ func NewRootCmd() *cobra.Command {
 				HistoryMode: enums.PerDatabaseHistory,
 				HistoryName: "libsql",
 				QuietMode:   rootArgs.quiet,
+				AuthToken:   rootArgs.authToken,
 			}
 
 			if cmd.Flag("exec").Changed {
@@ -48,6 +50,7 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd.Flags().StringVarP(&rootArgs.statements, "exec", "e", "", "SQL statements separated by ;")
 	rootCmd.Flags().BoolVarP(&rootArgs.quiet, "quiet", "q", false, "Don't print welcome message")
+	rootCmd.Flags().StringVar(&rootArgs.authToken, "auth", "", "Add a JWT Token.")
 
 	return rootCmd
 }

@@ -12,16 +12,17 @@ import (
 type RootCommandShellSuite struct {
 	suite.Suite
 
-	dbPath string
-	tc     *utils.DbTestContext
+	dbPath    string
+	authToken string
+	tc        *utils.DbTestContext
 }
 
-func NewRootCommandShellSuite(dbPath string) *RootCommandShellSuite {
-	return &RootCommandShellSuite{dbPath: dbPath}
+func NewRootCommandShellSuite(dbPath string, authToken string) *RootCommandShellSuite {
+	return &RootCommandShellSuite{dbPath: dbPath, authToken: authToken}
 }
 
 func (s *RootCommandShellSuite) SetupSuite() {
-	s.tc = utils.NewTestContext(s.T(), s.dbPath)
+	s.tc = utils.NewTestContext(s.T(), s.dbPath, s.authToken)
 	s.tc.DropAllTables()
 }
 
@@ -84,7 +85,7 @@ func (s *RootCommandShellSuite) TestRootCommandShell_WhenSplittingStatementsInto
 }
 
 func TestRootCommandShellSuite_WhenDbIsSQLite(t *testing.T) {
-	suite.Run(t, NewRootCommandShellSuite(t.TempDir()+"test.sqlite"))
+	suite.Run(t, NewRootCommandShellSuite(t.TempDir()+"test.sqlite", ""))
 }
 
 func TestRootCommandShellSuite_WhenDbIsSqld(t *testing.T) {
@@ -93,5 +94,5 @@ func TestRootCommandShellSuite_WhenDbIsSqld(t *testing.T) {
 		t.Skip("Skipping Sqld tests due configuration")
 	}
 
-	suite.Run(t, NewRootCommandShellSuite(testConfig.SqldDbPath))
+	suite.Run(t, NewRootCommandShellSuite(testConfig.SqldDbPath, testConfig.AuthToken))
 }

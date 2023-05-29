@@ -13,8 +13,9 @@ import (
 type RootCommandExecSuite struct {
 	suite.Suite
 
-	dbPath string
-	tc     *utils.DbTestContext
+	dbPath    string
+	authToken string
+	tc        *utils.DbTestContext
 }
 
 func NewRootCommandExecSuite(dbPath string) *RootCommandExecSuite {
@@ -22,7 +23,7 @@ func NewRootCommandExecSuite(dbPath string) *RootCommandExecSuite {
 }
 
 func (s *RootCommandExecSuite) SetupSuite() {
-	s.tc = utils.NewTestContext(s.T(), s.dbPath)
+	s.tc = utils.NewTestContext(s.T(), s.dbPath, s.authToken)
 	s.tc.DropAllTables()
 }
 
