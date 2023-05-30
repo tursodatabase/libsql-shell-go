@@ -74,20 +74,20 @@ The above git hooks require `golangci-lint` in your PATH. [Install golangci-lint
 The tests are configured through `.test_config.yaml` file. Copy `.test_config.yaml.example` to create your `.test_config.yaml` and see below the description for each field:
 
   - `sqld_db_path`: URL for sqld database used during the tests. It should be a dedicated database once it's cleared after each test. In particular, for turso databases, follow the steps from [Running the Project/Turso](#Turso) to generate a Turso db path. For this database, it's useful to generate a non-expiration token with `turso db tokens create --expiration none <turso_test_db_name>`
+    If you're working with a local server pass the local address inside this env variable. In case it's a local file, provide the file path.
   - `skip_sqld_tests`: Used to skip SQLD related tests
 
 ### Running tests against a locally-running sqld instance
 
-An easy way to get an sqld server running locally is to clone
-[hrana-test-server](https://github.com/libsql/hrana-test-server)
-and run the
-[test_server](https://github.com/libsql/hrana-test-server/blob/main/test_server.py)
-python script.
+An easy way to get an SQLD server locally is by running the remote docker image:
 
-Then, in `libsql-shell-go`, edit your `test_config.yaml` file in by adding the url
-of the locally running sqld server under `sqld_db_path`. Remember to set the variable
-`skip_sqld_tests` to `false`, otherwise, sqld-related tests will be skipped.
-Once you have this configuration and the sqld instance running simply run the tests normally:
+``` shell
+docker run -p 8080:8080 -d ghcr.io/libsql/sqld:latest
+```
+
+This command runs the latest version available, exposing the server on (http://localhost:8080). You can checkout other versions
+[here](https://github.com/libsql/sqld/pkgs/container/sqld).
+Now, in `libsql-shell-go`, edit your `test_config.yaml` file by adding the URL of the locally running sqld server under `sqld_db_uri`. Remember to set the variable `skip_sqld_tests` to `false`, otherwise, sqld-related tests will be skipped.  Once you have this configuration and the sqld instance running simply run the tests normally:
 
 ``` shell
 go test -v ./...
