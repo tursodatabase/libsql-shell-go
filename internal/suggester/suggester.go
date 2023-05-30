@@ -11,6 +11,11 @@ import (
 func SuggestCompletion(currentInput string) []string {
 	suggestions := make([]string, 0)
 
+	lastChar := currentInput[len(currentInput)-1]
+	if unicode.IsSpace(rune(lastChar)) {
+		return nil
+	}
+
 	lastInputToken, expectedTokens := getLastInputTokenAndExpectedTokens(currentInput)
 	if expectedTokens == nil {
 		return nil
