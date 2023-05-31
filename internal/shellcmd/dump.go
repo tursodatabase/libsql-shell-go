@@ -81,54 +81,16 @@ func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig)
 }
 
 func dumpTableInfo(tableInfoStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
-	createTableStatement := "CREATE TABLE " + tableName + "("
-	var isFirstColumn bool = true
-
 	for tableInfoRowResult := range tableInfoStatementResult.RowCh {
 		if tableInfoRowResult.Err != nil {
 			return tableInfoRowResult.Err
 		}
-		if !isFirstColumn {
-			createTableStatement += ", "
+		sql := tableInfoRowResult.Row[0]
+		if sql != nil {
+			formattedSql, _ := db.FormatData([]interface{}{sql}, db.TABLE)
+			fmt.Fprintln(config.OutF, formattedSql[0])
 		}
-
-		fieldName := tableInfoRowResult.Row[1]
-		fieldType := tableInfoRowResult.Row[2]
-		isNotNull := tableInfoRowResult.Row[3]
-		defaultValue := tableInfoRowResult.Row[4]
-		isPrimaryKey := tableInfoRowResult.Row[5]
-
-		createTableStatement += fmt.Sprintf("%s %s", fieldName, fieldType)
-
-		if defaultValue != nil {
-			createTableStatement += ` DEFAULT ` + fmt.Sprint(defaultValue)
-		}
-
-		if isNotNullInt64, ok := isNotNull.(int64); ok {
-			if isNotNullInt64 == 1 {
-				createTableStatement += " NOT NULL"
-			}
-		} else if isNotNullFloat64, ok := isNotNull.(float64); ok {
-			if isNotNullFloat64 == 1 {
-				createTableStatement += " NOT NULL"
-			}
-		}
-
-		if isPrimaryKeyInt64, ok := isPrimaryKey.(int64); ok {
-			if isPrimaryKeyInt64 == 1 {
-				createTableStatement += " PRIMARY KEY"
-			}
-		} else if isPrimaryKeyFloat64, ok := isPrimaryKey.(float64); ok {
-			if isPrimaryKeyFloat64 == 1 {
-				createTableStatement += " PRIMARY KEY"
-			}
-		}
-		isFirstColumn = false
 	}
-
-	createTableStatement += ");"
-	fmt.Fprintln(config.OutF, createTableStatement)
-
 	return nil
 }
 
@@ -209,7 +171,7 @@ func getDbTables(config *DbCmdConfig) (db.StatementResult, error) {
 
 func getTableInfo(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
 	tableInfoResult, err := config.Db.ExecuteStatements(
-		fmt.Sprintf("PRAGMA table_info(%s)", tableName),
+		fmt.Sprintf("SELECT SQL FROM sqlite_master WHERE TBL_NAME='%s'", tableName),
 	)
 	if err != nil {
 		return db.StatementResult{}, err
