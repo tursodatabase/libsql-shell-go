@@ -20,12 +20,12 @@ var dumpCmd = &cobra.Command{
 
 		fmt.Fprintln(config.OutF, "PRAGMA foreign_keys=OFF;")
 
-		getTablesStatementResult, err := getDbTables(config)
+		getTableNamesStatementResult, err := getDbTableNames(config)
 		if err != nil {
 			return err
 		}
 
-		err = dumpTables(getTablesStatementResult, config)
+		err = dumpTables(getTableNamesStatementResult, config)
 		if err != nil {
 			return err
 		}
@@ -46,12 +46,12 @@ func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig)
 
 		formattedTableName := formattedRow[0]
 
-		tableInfoStatementResult, err := getTableInfo(config, formattedTableName)
+		tableSchemaStatementResult, err := getTableSchema(config, formattedTableName)
 		if err != nil {
 			return err
 		}
 
-		err = dumpTableInfo(tableInfoStatementResult, config, formattedTableName)
+		err = dumpTableSchema(tableSchemaStatementResult, config, formattedTableName)
 		if err != nil {
 			return err
 		}
@@ -70,12 +70,12 @@ func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig)
 	return nil
 }
 
-func dumpTableInfo(tableInfoStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
-	for tableInfoRowResult := range tableInfoStatementResult.RowCh {
-		if tableInfoRowResult.Err != nil {
-			return tableInfoRowResult.Err
+func dumpTableSchema(tableSchemaStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
+	for tableSchemaRowResult := range tableSchemaStatementResult.RowCh {
+		if tableSchemaRowResult.Err != nil {
+			return tableSchemaRowResult.Err
 		}
-		sql := tableInfoRowResult.Row[0]
+		sql := tableSchemaRowResult.Row[0]
 		if sql != nil {
 			formattedSql, _ := db.FormatData([]interface{}{sql}, db.TABLE)
 			fmt.Fprintln(config.OutF, formattedSql[0])
@@ -104,7 +104,7 @@ func dumpTableRecords(tableRecordsStatementResult db.StatementResult, config *Db
 	return nil
 }
 
-func getDbTables(config *DbCmdConfig) (db.StatementResult, error) {
+func getDbTableNames(config *DbCmdConfig) (db.StatementResult, error) {
 	listTablesResult, err := config.Db.ExecuteStatements("SELECT name FROM sqlite_master WHERE type='table' and name not like 'sqlite_%' and name != '_litestream_seq' and name != '_litestream_lock' and name != 'libsql_wasm_func_table'")
 	if err != nil {
 		return db.StatementResult{}, err
@@ -118,7 +118,7 @@ func getDbTables(config *DbCmdConfig) (db.StatementResult, error) {
 	return statementResult, nil
 }
 
-func getTableInfo(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
+func getTableSchema(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
 	tableInfoResult, err := config.Db.ExecuteStatements(
 		fmt.Sprintf("SELECT SQL FROM sqlite_master WHERE TBL_NAME='%s'", tableName),
 	)
