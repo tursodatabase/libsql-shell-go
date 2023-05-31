@@ -65,16 +65,6 @@ func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig)
 		if err != nil {
 			return err
 		}
-
-		indexesStatementResult, err := getTableIndexes(config, formattedTableName)
-		if err != nil {
-			return err
-		}
-
-		err = dumpTableIndexes(indexesStatementResult, config, formattedTableName)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -111,47 +101,6 @@ func dumpTableRecords(tableRecordsStatementResult db.StatementResult, config *Db
 		fmt.Fprintln(config.OutF, insertStatement)
 	}
 
-	return nil
-}
-
-func dumpTableIndexes(indexesStatementResult db.StatementResult, config *DbCmdConfig, tableName string) error {
-	for indexesRowResult := range indexesStatementResult.RowCh {
-		if indexesRowResult.Err != nil {
-			return indexesRowResult.Err
-		}
-
-		indexesFormattedRow, err := db.FormatData(indexesRowResult.Row, db.TABLE)
-		if err != nil {
-			return err
-		}
-
-		indexName := indexesFormattedRow[1]
-		err = dumpIndex(indexName, config)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func dumpIndex(indexName string, config *DbCmdConfig) error {
-	indexStatementResult, err := getIndex(config, indexName)
-	if err != nil {
-		return err
-	}
-
-	for indexRowResult := range indexStatementResult.RowCh {
-		if indexRowResult.Err != nil {
-			return indexRowResult.Err
-		}
-
-		indexFormattedRow, err := db.FormatData(indexRowResult.Row, db.TABLE)
-		if err != nil {
-			return err
-		}
-		index := indexFormattedRow[0]
-		fmt.Fprintln(config.OutF, index+";")
-	}
 	return nil
 }
 
@@ -194,37 +143,6 @@ func getTableRecords(config *DbCmdConfig, tableName string) (db.StatementResult,
 	}
 
 	statementResult := <-tableRecordsResult.StatementResultCh
-	if statementResult.Err != nil {
-		return db.StatementResult{}, statementResult.Err
-	}
-
-	return statementResult, nil
-}
-
-func getTableIndexes(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
-	tableIndexesResult, err := config.Db.ExecuteStatements(
-		fmt.Sprintf("PRAGMA index_list(%s)", tableName),
-	)
-	if err != nil {
-		return db.StatementResult{}, err
-	}
-
-	statementResult := <-tableIndexesResult.StatementResultCh
-	if statementResult.Err != nil {
-		return db.StatementResult{}, statementResult.Err
-	}
-
-	return statementResult, nil
-}
-
-func getIndex(config *DbCmdConfig, indexName string) (db.StatementResult, error) {
-	partialIndexResult, err := config.Db.ExecuteStatements(
-		fmt.Sprintf("SELECT REPLACE(REPLACE(sql, ' where ', ' WHERE '), ' on ', ' ON ') AS sql_uppercase FROM sqlite_master WHERE type='index' AND name='%s';", indexName),
-	)
-	if err != nil {
-		return db.StatementResult{}, err
-	}
-	statementResult := <-partialIndexResult.StatementResultCh
 	if statementResult.Err != nil {
 		return db.StatementResult{}, statementResult.Err
 	}
