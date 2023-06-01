@@ -184,9 +184,8 @@ func (s *DBRootCommandShellSuite) Test_GivenAEmptyTable_WhenCallDotDumpCommand_E
 	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-
-	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\n"+
-		`CREATE TABLE alltypes(textNullable TEXT, textNotNullable TEXT NOT NULL, textWithDefault TEXT DEFAULT 'defaultValue', intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x"0"');`)
+	expected := "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');"
+	s.tc.Assert(outS, qt.Equals, expected)
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenATableConainingRandomFields_WhenInsertAndCallDotDumpCommand_ExpectNoErrors() {
@@ -199,7 +198,9 @@ func (s *DBRootCommandShellSuite) Test_GivenATableConainingRandomFields_WhenInse
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes(t TEXT, i INTEGER, r REAL, b BLOB);\nINSERT INTO alltypes VALUES ('text', 99, 3.14, X'0123456789ABCDEF');")
+	expected := "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes (t text, i integer, r real, b blob);\nINSERT INTO alltypes VALUES ('text', 99, 3.14, X'0123456789ABCDEF');"
+
+	s.tc.Assert(outS, qt.Equals, expected)
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenATableConainingFieldsWithALLTypes_WhenInsertAndCallDotDumpCommand_ExpectNoErrors() {
@@ -211,9 +212,9 @@ func (s *DBRootCommandShellSuite) Test_GivenATableConainingFieldsWithALLTypes_Wh
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\n"+
-		`CREATE TABLE alltypes(textNullable TEXT, textNotNullable TEXT NOT NULL, textWithDefault TEXT DEFAULT 'defaultValue', intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x"0"');`+
-		"\n"+`INSERT INTO alltypes VALUES (NULL, 'text2', 'defaultValue', NULL, 0, 0, NULL, 1.5, 0, NULL, 0, 0, NULL, X'0123456789ABCDEF', 'x"0"');`)
+	expected := "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nINSERT INTO alltypes VALUES (NULL, 'text2', 'defaultValue', NULL, 0, 0, NULL, 1.5, 0, NULL, 0, 0, NULL, X'0123456789ABCDEF', 'x\"0\"');"
+
+	s.tc.Assert(outS, qt.Equals, expected)
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAndCallDotDumpCommand_ExpectNoErrors() {
@@ -226,10 +227,9 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAnd
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	s.tc.Assert(outS, qt.Equals, "PRAGMA foreign_keys=OFF;\n"+
-		"CREATE TABLE alltypes(textNullable TEXT, textNotNullable TEXT NOT NULL, textWithDefault TEXT DEFAULT 'defaultValue', intNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', floatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', unknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, blobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\n"+
-		"CREATE INDEX idx_intNotNullable ON alltypes (intNotNullable) WHERE intNotNullable > 1;\n"+
-		"CREATE INDEX idx_textNullable ON alltypes (textNullable);")
+	expected := "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nCREATE INDEX idx_textNullable on alltypes (textNullable)CREATE INDEX idx_intNotNullable on alltypes (intNotNullable) WHERE intNotNullable > 1;"
+
+	s.tc.Assert(outS, qt.Equals, expected)
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenATableWithRecord_WhenCallDotModeCSVAndSelect_ExpectNoErrors() {
