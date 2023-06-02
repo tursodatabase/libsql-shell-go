@@ -54,6 +54,10 @@ func Test_GivenIncompleteKeywordInput_WhenSuggestCompletion_ExpectValidKeywords(
 		// 	input:              "insert i",
 		// 	expectedSuggestion: []string{"nto"},
 		// },
+		{
+			input:              "inse ",
+			expectedSuggestion: nil,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
