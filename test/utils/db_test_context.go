@@ -174,3 +174,7 @@ func (tc *DbTestContext) CreateTempFile(content string) (*os.File, string) {
 
 	return file, filePath
 }
+
+func (tc *DbTestContext) AssertSqlEquals(got, want string) bool {
+	return tc.Assert(strings.ToLower(got), qt.Equals, strings.ToLower(want))
+}
