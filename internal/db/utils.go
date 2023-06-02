@@ -2,16 +2,16 @@ package db
 
 import "net/url"
 
-func IsUrl(path string) bool {
-	url, err := url.ParseRequestURI(path)
+func IsUrl(uri string) bool {
+	url, err := url.ParseRequestURI(uri)
 	if err != nil {
 		return false
 	}
 	return url.Scheme != ""
 }
 
-func IsValidSqldUrl(path string) (bool, string) {
-	url, err := url.ParseRequestURI(path)
+func IsValidSqldUrl(uri string) (bool, string) {
+	url, err := url.ParseRequestURI(uri)
 	if err != nil {
 		return false, ""
 	}

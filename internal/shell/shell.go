@@ -152,7 +152,7 @@ func (sac *shellAutoCompleter) Do(line []rune, pos int) (newLine [][]rune, lengh
 }
 
 func (sh *Shell) newReadline() (*readline.Instance, error) {
-	historyFile := GetHistoryFileBasedOnMode(sh.db.Path, sh.config.HistoryMode, sh.config.HistoryName)
+	historyFile := GetHistoryFileBasedOnMode(sh.db.Uri, sh.config.HistoryMode, sh.config.HistoryName)
 
 	autoCompleter := &shellAutoCompleter{suggestCompletion: suggester.SuggestCompletion}
 

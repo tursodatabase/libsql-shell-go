@@ -12,17 +12,17 @@ import (
 type RootCommandShellSuite struct {
 	suite.Suite
 
-	dbPath    string
+	dbUri     string
 	authToken string
 	tc        *utils.DbTestContext
 }
 
-func NewRootCommandShellSuite(dbPath string, authToken string) *RootCommandShellSuite {
-	return &RootCommandShellSuite{dbPath: dbPath, authToken: authToken}
+func NewRootCommandShellSuite(dbUri string, authToken string) *RootCommandShellSuite {
+	return &RootCommandShellSuite{dbUri: dbUri, authToken: authToken}
 }
 
 func (s *RootCommandShellSuite) SetupSuite() {
-	s.tc = utils.NewTestContext(s.T(), s.dbPath, s.authToken)
+	s.tc = utils.NewTestContext(s.T(), s.dbUri, s.authToken)
 	s.tc.DropAllTables()
 }
 
@@ -94,5 +94,5 @@ func TestRootCommandShellSuite_WhenDbIsSqld(t *testing.T) {
 		t.Skip("Skipping Sqld tests due configuration")
 	}
 
-	suite.Run(t, NewRootCommandShellSuite(testConfig.SqldDbPath, testConfig.AuthToken))
+	suite.Run(t, NewRootCommandShellSuite(testConfig.SqldDbUri, testConfig.AuthToken))
 }

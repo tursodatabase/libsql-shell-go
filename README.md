@@ -73,7 +73,7 @@ The above git hooks require `golangci-lint` in your PATH. [Install golangci-lint
 
 The tests are configured through `.test_config.yaml` file. Copy `.test_config.yaml.example` to create your `.test_config.yaml` and see below the description for each field:
 
-  - `sqld_db_path`: URL for sqld database used during the tests. It should be a dedicated database once it's cleared after each test. In particular, for turso databases, follow the steps from [Running the Project/Turso](#Turso) to generate a Turso db path. For this database, it's useful to generate a non-expiration token with `turso db tokens create --expiration none <turso_test_db_name>`
+  - `sqld_db_uri`: URL for sqld database used during the tests. It should be a dedicated database once it's cleared after each test. In particular, for turso databases, follow the steps from [Running the Project/Turso](#Turso) to generate a Turso db path. For this database, it's useful to generate a non-expiration token with `turso db tokens create --expiration none <turso_test_db_name>`
     If you're working with a local server pass the local address inside this env variable. In case it's a local file, provide the file path.
   - `skip_sqld_tests`: Used to skip SQLD related tests
 
