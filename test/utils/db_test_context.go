@@ -18,13 +18,13 @@ type DbTestContext struct {
 	*testing.T
 	*qt.C
 
-	dbPath string
+	dbUri string
 
 	db *db.Db
 }
 
-func NewTestContext(t *testing.T, dbPath string, authToken string) *DbTestContext {
-	db, err := db.NewDb(dbPath, authToken)
+func NewTestContext(t *testing.T, dbUri string, authToken string) *DbTestContext {
+	db, err := db.NewDb(dbUri, authToken)
 	if err != nil {
 		t.Fatalf("Fail to create new db. err: %v", err)
 	}
@@ -32,7 +32,7 @@ func NewTestContext(t *testing.T, dbPath string, authToken string) *DbTestContex
 		t.Fatalf("Fail to test connection. err: %v", err)
 	}
 
-	return &DbTestContext{T: t, C: qt.New(t), dbPath: dbPath, db: db}
+	return &DbTestContext{T: t, C: qt.New(t), dbUri: dbUri, db: db}
 }
 
 func (tc *DbTestContext) Close() {

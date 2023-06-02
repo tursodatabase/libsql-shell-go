@@ -22,7 +22,7 @@ const (
 type TestConfig struct {
 	SkipSqldTests bool   `koanf:"skip_sqld_tests"`
 	AuthToken     string `koanf:"auth_token"`
-	SqldDbPath    string `koanf:"sqld_db_path" validate:"required_if=SkipSqldTests false"`
+	SqldDbUri     string `koanf:"sqld_db_uri" validate:"required_if=SkipSqldTests false"`
 }
 
 func newTestConfig() *TestConfig {

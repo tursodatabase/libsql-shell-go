@@ -26,7 +26,7 @@ func NewRootCmd() *cobra.Command {
 		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			shellConfig := shell.ShellConfig{
-				DbPath:      args[0],
+				DbUri:       args[0],
 				InF:         cmd.InOrStdin(),
 				OutF:        cmd.OutOrStdout(),
 				ErrF:        cmd.ErrOrStderr(),

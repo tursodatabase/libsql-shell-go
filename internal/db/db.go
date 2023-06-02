@@ -25,7 +25,7 @@ const (
 )
 
 type Db struct {
-	Path string
+	Uri string
 
 	sqlDb     *sql.DB
 	driver    driver
@@ -67,8 +67,8 @@ func newRowResultWithError(err error) *rowResult {
 	return &rowResult{Err: treatedErr}
 }
 
-func addAuthTokenAsQueryParameter(dbPath string, authToken string) (string, error) {
-	dbUrl, err := url.Parse(dbPath)
+func addAuthTokenAsQueryParameter(dbUri string, authToken string) (string, error) {
+	dbUrl, err := url.Parse(dbUri)
 	if err != nil {
 		return "", err
 	}
@@ -81,14 +81,14 @@ func addAuthTokenAsQueryParameter(dbPath string, authToken string) (string, erro
 	return dbUrl.String(), nil
 }
 
-func NewDb(dbPath string, authToken string) (*Db, error) {
+func NewDb(dbUri string, authToken string) (*Db, error) {
 	var err error
-	dbUrl, err := addAuthTokenAsQueryParameter(dbPath, authToken)
+	dbUrl, err := addAuthTokenAsQueryParameter(dbUri, authToken)
 	if err != nil {
 		return nil, err
 	}
 
-	var db = Db{Path: dbUrl}
+	var db = Db{Uri: dbUrl}
 
 	if IsUrl(dbUrl) {
 		var validSqldUrl bool
@@ -100,7 +100,7 @@ func NewDb(dbPath string, authToken string) (*Db, error) {
 		}
 	} else {
 		db.driver = sqlite3
-		db.sqlDb, err = sql.Open("sqlite3", dbPath)
+		db.sqlDb, err = sql.Open("sqlite3", dbUri)
 	}
 	if err != nil {
 		return nil, err

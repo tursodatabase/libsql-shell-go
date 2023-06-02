@@ -13,17 +13,17 @@ import (
 type RootCommandExecSuite struct {
 	suite.Suite
 
-	dbPath    string
+	dbUri     string
 	authToken string
 	tc        *utils.DbTestContext
 }
 
-func NewRootCommandExecSuite(dbPath string) *RootCommandExecSuite {
-	return &RootCommandExecSuite{dbPath: dbPath}
+func NewRootCommandExecSuite(dbUri string) *RootCommandExecSuite {
+	return &RootCommandExecSuite{dbUri: dbUri}
 }
 
 func (s *RootCommandExecSuite) SetupSuite() {
-	s.tc = utils.NewTestContext(s.T(), s.dbPath, s.authToken)
+	s.tc = utils.NewTestContext(s.T(), s.dbUri, s.authToken)
 	s.tc.DropAllTables()
 }
 
@@ -157,5 +157,5 @@ func TestRootCommandExecSuite_WhenDbIsSqld(t *testing.T) {
 		t.Skip("Skipping SQLD tests due configuration")
 	}
 
-	suite.Run(t, NewRootCommandExecSuite(testConfig.SqldDbPath))
+	suite.Run(t, NewRootCommandExecSuite(testConfig.SqldDbUri))
 }
