@@ -22,13 +22,14 @@ const promptNewStatement = "→  "
 const promptContinueStatement = "... "
 
 type ShellConfig struct {
-	InF            io.Reader
-	OutF           io.Writer
-	ErrF           io.Writer
-	HistoryMode    enums.HistoryMode
-	HistoryName    string
-	QuietMode      bool
-	WelcomeMessage *string
+	InF                   io.Reader
+	OutF                  io.Writer
+	ErrF                  io.Writer
+	HistoryMode           enums.HistoryMode
+	HistoryName           string
+	QuietMode             bool
+	WelcomeMessage        *string
+	DisableAutoCompletion bool
 }
 
 type Shell struct {
@@ -154,9 +155,7 @@ func (sac *shellAutoCompleter) Do(line []rune, pos int) (newLine [][]rune, lengh
 func (sh *Shell) newReadline() (*readline.Instance, error) {
 	historyFile := GetHistoryFileBasedOnMode(sh.db.Uri, sh.config.HistoryMode, sh.config.HistoryName)
 
-	autoCompleter := &shellAutoCompleter{suggestCompletion: suggester.SuggestCompletion}
-
-	return readline.NewEx(&readline.Config{
+	config := &readline.Config{
 		Prompt:          sh.promptFmt(promptNewStatement),
 		InterruptPrompt: "^C",
 		HistoryFile:     historyFile,
@@ -164,8 +163,14 @@ func (sh *Shell) newReadline() (*readline.Instance, error) {
 		Stdin:           io.NopCloser(sh.config.InF),
 		Stdout:          sh.config.OutF,
 		Stderr:          sh.config.ErrF,
-		AutoComplete:    autoCompleter,
-	})
+	}
+
+	if !sh.config.DisableAutoCompletion {
+		autoCompleter := &shellAutoCompleter{suggestCompletion: suggester.SuggestCompletion}
+		config.AutoComplete = autoCompleter
+	}
+
+	return readline.NewEx(config)
 }
 
 func isCommand(line string) bool {

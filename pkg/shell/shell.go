@@ -22,6 +22,7 @@ type ShellConfig struct {
 	QuietMode                 bool
 	WelcomeMessage            *string
 	AfterDbConnectionCallback func()
+	DisableAutoCompletion     bool
 }
 
 func RunShell(config ShellConfig) error {
@@ -83,12 +84,13 @@ func RunShellLine(config ShellConfig, line string) error {
 
 func publicToInternalConfig(publicConfig ShellConfig) shell.ShellConfig {
 	return shell.ShellConfig{
-		InF:            publicConfig.InF,
-		OutF:           publicConfig.OutF,
-		ErrF:           publicConfig.ErrF,
-		HistoryMode:    publicConfig.HistoryMode,
-		HistoryName:    publicConfig.HistoryName,
-		QuietMode:      publicConfig.QuietMode,
-		WelcomeMessage: publicConfig.WelcomeMessage,
+		InF:                   publicConfig.InF,
+		OutF:                  publicConfig.OutF,
+		ErrF:                  publicConfig.ErrF,
+		HistoryMode:           publicConfig.HistoryMode,
+		HistoryName:           publicConfig.HistoryName,
+		QuietMode:             publicConfig.QuietMode,
+		WelcomeMessage:        publicConfig.WelcomeMessage,
+		DisableAutoCompletion: publicConfig.DisableAutoCompletion,
 	}
 }
