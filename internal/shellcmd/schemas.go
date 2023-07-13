@@ -17,7 +17,7 @@ var schemaCmd = &cobra.Command{
 			return fmt.Errorf("missing db connection")
 		}
 
-		schemaStatement := `select sql from sqlite_schema
+		schemaStatement := `select sql || ';' from sqlite_schema
 			where name not like 'sqlite_%'
 			and name != '_litestream_seq'
 			and name != '_litestream_lock'
