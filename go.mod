@@ -11,8 +11,8 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.0
-	github.com/libsql/libsql-client-go v0.0.0-20230608120923-16adc9970c73
-	github.com/libsql/sqlite-antlr4-parser v0.0.0-20230512205400-b2348f0d1196
+	github.com/libsql/libsql-client-go v0.0.0-20230730120949-adbf52a3ab54
+	github.com/libsql/sqlite-antlr4-parser v0.0.0-20230720193828-8c03e0ee46f8
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
@@ -52,5 +52,4 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 )

@@ -123,7 +123,7 @@ func (s *RootCommandExecSuite) Test_GivenSimpleTableCreated_WhenInsertValueWithS
 	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"id", "textField", "intField"}, [][]string{{"1", "text;Value", "1"}}))
 }
 
-func (s *RootCommandExecSuite) TestRootCommandExec_GivenEmptyDB_WhenSelectNull_ExpectNULLAsReturn() {
+func (s *RootCommandExecSuite) Test_GivenEmptyDB_WhenSelectNull_ExpectNULLAsReturn() {
 	outS, errS, err := s.tc.Execute("SELECT NULL")
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
@@ -131,7 +131,7 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenEmptyDB_WhenSelectNull_E
 	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"NULL"}, [][]string{{"NULL"}}))
 }
 
-func (s *RootCommandExecSuite) TestRootCommandExec_GivenTableCotainingBlobField_WhenInsertAndSelect_ExpectNoError() {
+func (s *RootCommandExecSuite) Test_GivenTableCotainingBlobField_WhenInsertAndSelect_ExpectNoError() {
 	_, errS, err := s.tc.Execute("CREATE TABLE alltypes (t text, i integer, r real, b blob)")
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
@@ -145,6 +145,34 @@ func (s *RootCommandExecSuite) TestRootCommandExec_GivenTableCotainingBlobField_
 	s.tc.Assert(errS, qt.Equals, "")
 
 	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"T", "I", "R", "B"}, [][]string{{"text", "99", "3.14", "0x0123456789ABCDEF"}}))
+}
+
+func (s *RootCommandExecSuite) Test_GivenTriggerOnUpdatedAtField_WhenRowUpdated_ExpectUpdatedAtFieldUpdated() {
+	_, errS, err := s.tc.Execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, updated_at INTEGER)")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	_, errS, err = s.tc.Execute("CREATE TRIGGER update_updated_at AFTER UPDATE ON users FOR EACH ROW BEGIN UPDATE users SET updated_at = 0 WHERE id = NEW.id; END")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	_, errS, err = s.tc.Execute("INSERT INTO users (name) VALUES ('user1')")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	outS, errS, err := s.tc.Execute("SELECT * FROM users")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"ID", "NAME", "UPDATED AT"}, [][]string{{"1", "user1", "NULL"}}))
+
+	_, errS, err = s.tc.Execute("UPDATE users SET name = 'new_user1' where id=1")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	outS, errS, err = s.tc.Execute("SELECT * FROM users")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+	s.tc.Assert(outS, qt.Equals, utils.GetPrintTableOutput([]string{"ID", "NAME", "UPDATED AT"}, [][]string{{"1", "new_user1", "0"}}))
 }
 
 func TestRootCommandExecSuite_WhenDbIsSQLite(t *testing.T) {
