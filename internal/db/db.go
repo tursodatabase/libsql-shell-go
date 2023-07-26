@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
+	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/xwb1989/sqlparser"
 
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
@@ -121,10 +121,7 @@ func (db *Db) Close() {
 }
 
 func (db *Db) ExecuteStatements(statementsString string) (StatementsResult, error) {
-	queries, err := db.prepareStatementsIntoQueries(statementsString)
-	if err != nil {
-		return StatementsResult{}, err
-	}
+	queries := db.prepareStatementsIntoQueries(statementsString)
 
 	statementResultCh := make(chan StatementResult)
 
@@ -178,7 +175,7 @@ func (db *Db) executeQuery(query string, statementResultCh chan StatementResult)
 	return readQueryResults(rows, statementResultCh)
 }
 
-func (db *Db) prepareStatementsIntoQueries(statementsString string) ([]string, error) {
+func (db *Db) prepareStatementsIntoQueries(statementsString string) []string {
 	// sqlite3 driver just run the first query that we send. So we must split the statements and send them one by one
 	// e.g If we execute query "select 1; select 2;" with it, just the first one ("select 1;") would be executed
 	//
@@ -188,10 +185,10 @@ func (db *Db) prepareStatementsIntoQueries(statementsString string) ([]string, e
 			db.driver == libsql && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
 
 	if mustSplitStatementsIntoMultipleQueries {
-		return sqlparser.SplitStatementToPieces(statementsString)
+		return sqliteparserutils.SplitStatement(statementsString)
 	}
 
-	return []string{statementsString}, nil
+	return []string{statementsString}
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {
