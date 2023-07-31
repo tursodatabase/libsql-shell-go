@@ -1,6 +1,9 @@
 package db
 
-import "net/url"
+import (
+	"net/url"
+	"strings"
+)
 
 func IsUrl(uri string) bool {
 	url, err := url.ParseRequestURI(uri)
@@ -16,4 +19,8 @@ func IsValidSqldUrl(uri string) (bool, string) {
 		return false, ""
 	}
 	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws" || url.Scheme == "http" || url.Scheme == "https", url.Scheme
+}
+
+func EscapeSingleQuotes(value string) string {
+	return strings.Replace(value, "'", "''", -1)
 }
