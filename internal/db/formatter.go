@@ -80,7 +80,8 @@ func (s SQLiteFormatter) formatDateTime(value time.Time) string {
 }
 
 func (s SQLiteFormatter) formatString(value string) string {
-	return fmt.Sprintf("'%v'", value)
+	formattedValue := EscapeSingleQuotes(value)
+	return fmt.Sprintf("'%v'", formattedValue)
 }
 
 type CSVFormatter struct {

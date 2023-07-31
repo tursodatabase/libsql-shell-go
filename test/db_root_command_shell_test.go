@@ -232,6 +232,36 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAnd
 	s.tc.AssertSqlEquals(outS, expected)
 }
 
+func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_WhenCalllDotDumpCommand_ExpectSingleQuoteScape() {
+	s.tc.CreateEmptySimpleTable("t")
+	_, errS, err := s.tc.Execute("INSERT INTO t VALUES (0, \"x'x\", 0)")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	expected := "pragma foreign_keys=off;\ncreate table t (id integer primary key, textfield text, intfield integer);\ninsert into t values (0, 'x''x', 0);"
+
+	s.tc.AssertSqlEquals(outS, expected)
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_WhenCalllSelectAllFromTable_ExpectSingleQuoteScape() {
+	s.tc.CreateEmptySimpleTable("t")
+	_, errS, err := s.tc.Execute("INSERT INTO t VALUES (0, \"x'x\", 0)")
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	outS, errS, err := s.tc.ExecuteShell([]string{"SELECT * FROM t;"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	expected := "id     textfield     intfield \n0      x'x           0"
+
+	s.tc.AssertSqlEquals(outS, expected)
+}
+
 func (s *DBRootCommandShellSuite) Test_GivenATableWithRecord_WhenCallDotModeCSVAndSelect_ExpectNoErrors() {
 	s.tc.CreateSimpleTable("simple_table", []utils.SimpleTableEntry{{TextField: "value \"1", IntField: 1}, {TextField: "value, 2", IntField: 2}})
 
