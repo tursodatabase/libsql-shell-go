@@ -76,7 +76,12 @@ func dumpTableRecords(tableRecordsStatementResult db.StatementResult, config *Db
 		if tableRecordsRowResult.Err != nil {
 			return tableRecordsRowResult.Err
 		}
-		insertStatement := "INSERT INTO " + tableName + " VALUES ("
+
+		var formattedTableName = tableName
+		if db.NeedsEscaping(tableName) {
+			formattedTableName = "'" + db.EscapeSingleQuotes(tableName) + "'"
+		}
+		insertStatement := "INSERT INTO " + formattedTableName + " VALUES ("
 
 		tableRecordsFormattedRow, err := db.FormatData(tableRecordsRowResult.Row, db.SQLITE)
 		if err != nil {
@@ -109,8 +114,9 @@ func getTableSchema(config *DbCmdConfig, tableName string) (string, string, erro
 	var createTableStatement string
 	var createIndexStatement string
 	const INDEX = "INDEX"
+	formattedTableName := db.EscapeSingleQuotes(tableName)
 	tableInfoResult, err := config.Db.ExecuteStatements(
-		fmt.Sprintf("SELECT SQL FROM sqlite_master WHERE TBL_NAME='%s'", tableName),
+		fmt.Sprintf("SELECT SQL FROM sqlite_master WHERE TBL_NAME='%s'", formattedTableName),
 	)
 	if err != nil {
 		return "", "", err
@@ -140,8 +146,9 @@ func getTableSchema(config *DbCmdConfig, tableName string) (string, string, erro
 }
 
 func getTableRecords(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
+	formattedTableName := db.EscapeSingleQuotes(tableName)
 	tableRecordsResult, err := config.Db.ExecuteStatements(
-		fmt.Sprintf("SELECT * FROM %s", tableName),
+		fmt.Sprintf("SELECT * FROM '%s'", formattedTableName),
 	)
 	if err != nil {
 		return db.StatementResult{}, err

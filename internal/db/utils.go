@@ -3,6 +3,7 @@ package db
 import (
 	"net/url"
 	"strings"
+	"unicode"
 )
 
 func IsUrl(uri string) bool {
@@ -23,4 +24,24 @@ func IsValidSqldUrl(uri string) (bool, string) {
 
 func EscapeSingleQuotes(value string) string {
 	return strings.Replace(value, "'", "''", -1)
+}
+
+func startsWithNumber(name string) bool {
+	firstChar := rune(name[0])
+	return unicode.IsNumber(firstChar)
+}
+
+func NeedsEscaping(name string) bool {
+	if len(name) == 0 {
+		return true
+	}
+	if startsWithNumber(name) {
+		return true
+	}
+	for _, char := range name {
+		if !unicode.IsLetter(char) && !unicode.IsNumber(char) && char != rune('_') {
+			return true
+		}
+	}
+	return false
 }
