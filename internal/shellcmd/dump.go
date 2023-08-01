@@ -46,12 +46,12 @@ func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig)
 
 		formattedTableName := formattedRow[0]
 
-		createTableStatement, createIndexStatement, err := getTableSchema(config, formattedTableName)
+		createTableStmt, otherStmts, err := getTableSchema(config, formattedTableName)
 		if err != nil {
 			return err
 		}
 
-		fmt.Fprintln(config.OutF, createTableStatement+";")
+		fmt.Fprintln(config.OutF, createTableStmt)
 
 		tableRecordsStatementResult, err := getTableRecords(config, formattedTableName)
 		if err != nil {
@@ -63,8 +63,8 @@ func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig)
 			return err
 		}
 
-		if createIndexStatement != "" {
-			fmt.Fprintln(config.OutF, createIndexStatement+";")
+		for _, stmt := range otherStmts {
+			fmt.Fprintln(config.OutF, stmt)
 		}
 	}
 
@@ -110,39 +110,44 @@ func getDbTableNames(config *DbCmdConfig) (db.StatementResult, error) {
 	return statementResult, nil
 }
 
-func getTableSchema(config *DbCmdConfig, tableName string) (string, string, error) {
-	var createTableStatement string
-	var createIndexStatement string
-	const INDEX = "INDEX"
+func getTableSchema(config *DbCmdConfig, tableName string) (createTable string, otherStmts []string, err error) {
 	formattedTableName := db.EscapeSingleQuotes(tableName)
 	tableInfoResult, err := config.Db.ExecuteStatements(
-		fmt.Sprintf("SELECT SQL FROM sqlite_master WHERE TBL_NAME='%s'", formattedTableName),
+		fmt.Sprintf("SELECT type, sql || ';' FROM sqlite_master WHERE TBL_NAME='%s'", formattedTableName),
 	)
 	if err != nil {
-		return "", "", err
+		return "", nil, err
 	}
 
 	statementResult := <-tableInfoResult.StatementResultCh
 	if statementResult.Err != nil {
-		return "", "", statementResult.Err
+		return "", nil, statementResult.Err
 	}
 
 	for statementRowResult := range statementResult.RowCh {
 		if statementRowResult.Err != nil {
-			return createTableStatement, createIndexStatement, statementResult.Err
+			return "", nil, statementResult.Err
 		}
-		sql := statementRowResult.Row[0]
-		if sql != nil {
-			formattedSql, _ := db.FormatData([]interface{}{sql}, db.TABLE)
-			if strings.Contains(formattedSql[0], INDEX) {
-				createIndexStatement += formattedSql[0]
-			} else {
-				createTableStatement += formattedSql[0]
-			}
+
+		formatted, err := db.FormatData(statementRowResult.Row, db.TABLE)
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to format data: %w", err)
 		}
+		if len(formatted) != 2 {
+			return "", nil, fmt.Errorf("expected 2 columns, got %d", len(formatted))
+		}
+
+		kind := formatted[0]
+		sql := formatted[1]
+		if kind == "table" {
+			createTable = sql
+			continue
+		}
+
+		otherStmts = append(otherStmts, sql)
 	}
 
-	return createTableStatement, createIndexStatement, nil
+	return
 }
 
 func getTableRecords(config *DbCmdConfig, tableName string) (db.StatementResult, error) {
