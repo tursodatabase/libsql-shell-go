@@ -27,7 +27,7 @@ var schemaCmd = &cobra.Command{
 			schemaStatement += " and name like '" + args[0] + "'"
 		}
 
-		schemaStatement += " order by name"
+		schemaStatement += " order by tbl_name"
 
 		return config.Db.ExecuteAndPrintStatements(schemaStatement, config.OutF, true, enums.TABLE_MODE)
 	},
