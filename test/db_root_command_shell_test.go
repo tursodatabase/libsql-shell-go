@@ -247,6 +247,30 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_Whe
 	s.tc.AssertSqlEquals(outS, expected)
 }
 
+func (s *DBRootCommandShellSuite) Test_GivenATableNameStartingWithNumber_WhenCalllDotDumpCommand_ExpectCorrectFormat() {
+	s.tc.CreateSimpleTable("'8test'", []utils.SimpleTableEntry{{TextField: "Value", IntField: 1}})
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	expected := "pragma foreign_keys=off;\ncreate table '8test' (id integer primary key, textfield text, intfield integer);\ninsert into '8test' values (1, 'value', 1);"
+
+	s.tc.AssertSqlEquals(outS, expected)
+}
+
+func (s *DBRootCommandShellSuite) Test_GivenATableNameWithSpecialCharacters_WhenCallDotDumpCommand_ExpectCorrectFormat() {
+	s.tc.CreateSimpleTable("'t+e(s!t?'", []utils.SimpleTableEntry{{TextField: "Value", IntField: 1}})
+
+	outS, errS, err := s.tc.ExecuteShell([]string{".dump"})
+	s.tc.Assert(err, qt.IsNil)
+	s.tc.Assert(errS, qt.Equals, "")
+
+	expected := "pragma foreign_keys=off;\ncreate table 't+e(s!t?' (id integer primary key, textfield text, intfield integer);\ninsert into 't+e(s!t?' values (1, 'value', 1);"
+
+	s.tc.AssertSqlEquals(outS, expected)
+}
+
 func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_WhenCalllSelectAllFromTable_ExpectSingleQuoteScape() {
 	s.tc.CreateEmptySimpleTable("t")
 	_, errS, err := s.tc.Execute("INSERT INTO t VALUES (0, \"x'x\", 0)")
