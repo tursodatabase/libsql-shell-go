@@ -12,6 +12,8 @@ import (
 	"github.com/libsql/libsql-shell-go/internal/shellcmd"
 	"github.com/libsql/libsql-shell-go/internal/suggester"
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
+	"github.com/libsql/sqlite-antlr4-parser/sqliteparser"
+	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
 	"github.com/spf13/cobra"
 )
 
@@ -193,8 +195,8 @@ func (sh *Shell) executeCommand(command string) error {
 
 func (sh *Shell) appendStatementPartAndExecuteIfFinished(statementPart string) {
 	sh.state.statementParts = append(sh.state.statementParts, statementPart)
-	if strings.HasSuffix(statementPart, ";") {
-		completeStatement := strings.Join(sh.state.statementParts, "\n")
+	completeStatement := strings.Join(sh.state.statementParts, "\n")
+	if isStatementFinished(completeStatement) {
 		sh.state.statementParts = make([]string, 0)
 		sh.state.insideMultilineStatement = false
 		sh.state.readline.SetPrompt(sh.promptFmt(promptNewStatement))
@@ -225,4 +227,11 @@ func (sh *Shell) getWelcomeMessage() string {
 
 func (sh *Shell) CancelQuery() {
 	sh.db.CancelQuery()
+}
+
+func isStatementFinished(statement string) bool {
+	_, splitExtraInfos := sqliteparserutils.SplitStatement(statement)
+	return !splitExtraInfos.IncompleteCreateTriggerStatement &&
+		!splitExtraInfos.IncompleteMultilineComment &&
+		splitExtraInfos.LastTokenType == sqliteparser.SQLiteLexerSCOL
 }
