@@ -145,7 +145,11 @@ func (tc *DbTestContext) CreateAllTypesTable(tableName string, initialValues []A
 }
 
 func (tc *DbTestContext) DropTable(tableName string) {
-	_, _, err := tc.Execute("DROP TABLE " + tableName)
+	name := tableName
+	if db.NeedsEscaping(tableName) {
+		name = fmt.Sprintf("'%s'", db.EscapeSingleQuotes(tableName))
+	}
+	_, _, err := tc.Execute("DROP TABLE " + name)
 	tc.Assert(err, qt.IsNil)
 }
 
@@ -155,7 +159,11 @@ func (tc *DbTestContext) getAllTables() []string {
 	if strings.TrimSpace(result) == "" {
 		return []string{}
 	}
-	return strings.Split(result, "\n")
+	names := strings.Split(result, "\n")
+	for i, name := range names {
+		names[i] = strings.TrimSpace(name)
+	}
+	return names
 }
 
 func (tc *DbTestContext) DropAllTables() {
