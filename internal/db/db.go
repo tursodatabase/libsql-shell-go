@@ -185,7 +185,8 @@ func (db *Db) prepareStatementsIntoQueries(statementsString string) []string {
 			db.driver == libsql && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
 
 	if mustSplitStatementsIntoMultipleQueries {
-		return sqliteparserutils.SplitStatement(statementsString)
+		stmts, _ := sqliteparserutils.SplitStatement(statementsString)
+		return stmts
 	}
 
 	return []string{statementsString}
