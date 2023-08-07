@@ -47,7 +47,7 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCo
 	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE another_simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)\nCREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
+	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE another_simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER);\nCREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER);"}}))
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCommandWithPattern_ExpectToReturnOneSchema() {
@@ -57,7 +57,7 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCo
 	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema simple_table"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
+	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE simple_table (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER);"}}))
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCallDotSchemaCommandWithPartialDbName_ExpectToReturnTwoSchemas() {
@@ -68,7 +68,7 @@ func (s *DBRootCommandShellSuite) Test_GivenADBWithThreeTables_WhenCallDotSchema
 	outSchema, errS, err := s.tc.ExecuteShell([]string{".schema test%"})
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
-	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE test_table_one (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)\nCREATE TABLE test_table_two (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER)"}}))
+	s.tc.Assert(outSchema, qt.Equals, utils.GetPrintTableOutput([]string{""}, [][]string{{"CREATE TABLE test_table_one (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER);\nCREATE TABLE test_table_two (id INTEGER PRIMARY KEY, textField TEXT, intField INTEGER);"}}))
 }
 
 func (s *DBRootCommandShellSuite) Test_GivenADBWithTwoTables_WhenCallDotSchemaCommandWithPatternThatDoesNotMatch_ExpectEmptyReturn() {
@@ -227,7 +227,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAnd
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
-	expected := "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nCREATE INDEX idx_textNullable on alltypes (textNullable)CREATE INDEX idx_intNotNullable on alltypes (intNotNullable) WHERE intNotNullable > 1;"
+	expected := "PRAGMA foreign_keys=OFF;\nCREATE TABLE alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nCREATE INDEX idx_textNullable on alltypes (textNullable);\nCREATE INDEX idx_intNotNullable on alltypes (intNotNullable) WHERE intNotNullable > 1;"
 
 	s.tc.AssertSqlEquals(outS, expected)
 }
