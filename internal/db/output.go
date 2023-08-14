@@ -21,7 +21,8 @@ type TablePrinter struct {
 func (t TablePrinter) print(statementResult StatementResult, outF io.Writer) error {
 	data := [][]string{}
 	table := createTable(outF)
-	if !t.withoutHeader {
+	showHeader := !IsResultComingFromExplainQueryPlan(statementResult) && !t.withoutHeader
+	if showHeader {
 		table.SetHeader(statementResult.ColumnNames)
 	}
 
@@ -100,6 +101,11 @@ func appendData(statementResult StatementResult, data [][]string, mode FormatTyp
 		}
 		data = append(data, formattedRow)
 	}
+
+	if IsResultComingFromExplainQueryPlan(statementResult) {
+		data = [][]string{{"Tree goes here!"}}
+	}
+
 	return data, nil
 }
 

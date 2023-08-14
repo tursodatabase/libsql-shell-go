@@ -223,15 +223,16 @@ func getColumnTypes(rows *sql.Rows) ([]reflect.Type, error) {
 
 func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResult, query string) (shouldContinue bool) {
 	queries, _ := sqliteparserutils.SplitStatement(query)
+	queryIndex := 0
 	hasResultSetToRead := true
 	for hasResultSetToRead {
-		for _, query := range queries {
-			if shouldContinue := readQueryResultSet(queryRows, statementResultCh, query); !shouldContinue {
-				return false
-			}
-
-			hasResultSetToRead = queryRows.NextResultSet()
+		query := queries[queryIndex]
+		if shouldContinue := readQueryResultSet(queryRows, statementResultCh, query); !shouldContinue {
+			return false
 		}
+
+		hasResultSetToRead = queryRows.NextResultSet()
+		queryIndex++
 	}
 
 	if err := queryRows.Err(); err != nil {
