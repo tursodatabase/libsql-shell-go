@@ -42,6 +42,7 @@ type StatementResult struct {
 	ColumnNames []string
 	RowCh       chan rowResult
 	Err         error
+	Query       string
 }
 
 func newStatementResult(columnNames []string, rowCh chan rowResult) *StatementResult {
