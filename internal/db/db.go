@@ -45,8 +45,8 @@ type StatementResult struct {
 	Query       string
 }
 
-func newStatementResult(columnNames []string, rowCh chan rowResult) *StatementResult {
-	return &StatementResult{ColumnNames: columnNames, RowCh: rowCh}
+func newStatementResult(columnNames []string, rowCh chan rowResult, query string) *StatementResult {
+	return &StatementResult{ColumnNames: columnNames, RowCh: rowCh, Query: query}
 }
 
 func newStatementResultWithError(err error) *StatementResult {
@@ -173,7 +173,7 @@ func (db *Db) executeQuery(query string, statementResultCh chan StatementResult)
 
 	defer rows.Close()
 
-	return readQueryResults(rows, statementResultCh)
+	return readQueryResults(rows, statementResultCh, query)
 }
 
 func (db *Db) prepareStatementsIntoQueries(statementsString string) []string {
@@ -221,14 +221,17 @@ func getColumnTypes(rows *sql.Rows) ([]reflect.Type, error) {
 	return types, nil
 }
 
-func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResult) (shouldContinue bool) {
+func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResult, query string) (shouldContinue bool) {
+	queries, _ := sqliteparserutils.SplitStatement(query)
 	hasResultSetToRead := true
 	for hasResultSetToRead {
-		if shouldContinue := readQueryResultSet(queryRows, statementResultCh); !shouldContinue {
-			return false
-		}
+		for _, query := range queries {
+			if shouldContinue := readQueryResultSet(queryRows, statementResultCh, query); !shouldContinue {
+				return false
+			}
 
-		hasResultSetToRead = queryRows.NextResultSet()
+			hasResultSetToRead = queryRows.NextResultSet()
+		}
 	}
 
 	if err := queryRows.Err(); err != nil {
@@ -239,7 +242,7 @@ func readQueryResults(queryRows *sql.Rows, statementResultCh chan StatementResul
 	return true
 }
 
-func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementResult) (shouldContinue bool) {
+func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementResult, query string) (shouldContinue bool) {
 	columnNames, err := getColumnNames(queryRows)
 	if err != nil {
 		statementResultCh <- *newStatementResultWithError(err)
@@ -265,7 +268,7 @@ func readQueryResultSet(queryRows *sql.Rows, statementResultCh chan StatementRes
 	rowCh := make(chan rowResult)
 	defer close(rowCh)
 
-	statementResultCh <- *newStatementResult(columnNames, rowCh)
+	statementResultCh <- *newStatementResult(columnNames, rowCh, query)
 
 	for queryRows.Next() {
 		err = queryRows.Scan(columnPointers...)
