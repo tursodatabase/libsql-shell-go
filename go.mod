@@ -11,7 +11,7 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.0
-	github.com/libsql/libsql-client-go v0.0.0-20230804090744-d63eccbb2c9f
+	github.com/libsql/libsql-client-go v0.0.0-20230821143203-d21eb9b18da3
 	github.com/libsql/sqlite-antlr4-parser v0.0.0-20230802215326-5cb5bb604475
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
