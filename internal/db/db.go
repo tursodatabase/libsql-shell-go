@@ -3,13 +3,14 @@ package db
 import (
 	"context"
 	"database/sql"
+	sqldriver "database/sql/driver"
 	"fmt"
 	"io"
 	"net/url"
 	"reflect"
 	"strings"
 
-	_ "github.com/libsql/libsql-client-go/libsql"
+	"github.com/libsql/libsql-client-go/libsql"
 	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
 	_ "github.com/mattn/go-sqlite3"
 
@@ -94,7 +95,17 @@ func NewDb(dbUri string, authToken string) (*Db, error) {
 		var validSqldUrl bool
 		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUrl); validSqldUrl {
 			db.driver = libsqlDriver
-			db.sqlDb, err = sql.Open("libsql", dbUrl)
+			var connector sqldriver.Connector
+			var err error
+			if authToken == "" {
+				connector, err = libsql.NewConnector(dbUrl)
+			} else {
+				connector, err = libsql.NewConnector(dbUrl, libsql.WithAuthToken(authToken))
+			}
+			if err != nil {
+				return nil, err
+			}
+			db.sqlDb = sql.OpenDB(connector)
 		} else {
 			return nil, &shellerrors.ProtocolError{}
 		}
