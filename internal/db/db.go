@@ -5,11 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
-	"net/url"
 	"reflect"
 	"strings"
 
-	_ "github.com/libsql/libsql-client-go/libsql"
+	"github.com/libsql/libsql-client-go/libsql"
 	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
 	_ "github.com/mattn/go-sqlite3"
 
@@ -20,8 +19,8 @@ import (
 type driver int
 
 const (
-	libsql driver = iota
-	sqlite3
+	libsqlDriver driver = iota
+	sqlite3Driver
 )
 
 type Db struct {
@@ -67,39 +66,32 @@ func newRowResultWithError(err error) *rowResult {
 	return &rowResult{Err: treatedErr}
 }
 
-func addAuthTokenAsQueryParameter(dbUri string, authToken string) (string, error) {
-	dbUrl, err := url.Parse(dbUri)
-	if err != nil {
-		return "", err
-	}
-	if authToken != "" {
-		urlValues := dbUrl.Query()
-		urlValues.Set("authToken", authToken)
-		dbUrl.RawQuery = urlValues.Encode()
-	}
-
-	return dbUrl.String(), nil
-}
-
-func NewDb(dbUri string, authToken string) (*Db, error) {
+func NewDb(dbUri, authToken, proxy string) (*Db, error) {
 	var err error
-	dbUrl, err := addAuthTokenAsQueryParameter(dbUri, authToken)
-	if err != nil {
-		return nil, err
-	}
 
-	var db = Db{Uri: dbUrl}
+	var db = Db{Uri: dbUri}
 
-	if IsUrl(dbUrl) {
+	if IsUrl(dbUri) {
 		var validSqldUrl bool
-		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUrl); validSqldUrl {
-			db.driver = libsql
-			db.sqlDb, err = sql.Open("libsql", dbUrl)
+		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUri); validSqldUrl {
+			db.driver = libsqlDriver
+			var options []libsql.Option
+			if authToken != "" {
+				options = append(options, libsql.WithAuthToken(authToken))
+			}
+			if proxy != "" {
+				options = append(options, libsql.WithProxy(proxy))
+			}
+			connector, err := libsql.NewConnector(dbUri, options...)
+			if err != nil {
+				return nil, err
+			}
+			db.sqlDb = sql.OpenDB(connector)
 		} else {
 			return nil, &shellerrors.ProtocolError{}
 		}
 	} else {
-		db.driver = sqlite3
+		db.driver = sqlite3Driver
 		db.sqlDb, err = sql.Open("sqlite3", dbUri)
 	}
 	if err != nil {
@@ -181,8 +173,8 @@ func (db *Db) prepareStatementsIntoQueries(statementsString string) []string {
 	//
 	// libsql driver doesn't accept multiple statements if using websocket connection
 	mustSplitStatementsIntoMultipleQueries :=
-		db.driver == sqlite3 ||
-			db.driver == libsql && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
+		db.driver == sqlite3Driver ||
+			db.driver == libsqlDriver && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
 
 	if mustSplitStatementsIntoMultipleQueries {
 		stmts, _ := sqliteparserutils.SplitStatement(statementsString)
