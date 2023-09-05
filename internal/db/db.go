@@ -3,10 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
-	sqldriver "database/sql/driver"
 	"fmt"
 	"io"
-	"net/url"
 	"reflect"
 	"strings"
 
@@ -68,40 +66,23 @@ func newRowResultWithError(err error) *rowResult {
 	return &rowResult{Err: treatedErr}
 }
 
-func addAuthTokenAsQueryParameter(dbUri string, authToken string) (string, error) {
-	dbUrl, err := url.Parse(dbUri)
-	if err != nil {
-		return "", err
-	}
-	if authToken != "" {
-		urlValues := dbUrl.Query()
-		urlValues.Set("authToken", authToken)
-		dbUrl.RawQuery = urlValues.Encode()
-	}
-
-	return dbUrl.String(), nil
-}
-
-func NewDb(dbUri string, authToken string) (*Db, error) {
+func NewDb(dbUri, authToken, proxy string) (*Db, error) {
 	var err error
-	dbUrl, err := addAuthTokenAsQueryParameter(dbUri, authToken)
-	if err != nil {
-		return nil, err
-	}
 
-	var db = Db{Uri: dbUrl}
+	var db = Db{Uri: dbUri}
 
-	if IsUrl(dbUrl) {
+	if IsUrl(dbUri) {
 		var validSqldUrl bool
-		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUrl); validSqldUrl {
+		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUri); validSqldUrl {
 			db.driver = libsqlDriver
-			var connector sqldriver.Connector
-			var err error
-			if authToken == "" {
-				connector, err = libsql.NewConnector(dbUrl)
-			} else {
-				connector, err = libsql.NewConnector(dbUrl, libsql.WithAuthToken(authToken))
+			var options []libsql.Option
+			if authToken != "" {
+				options = append(options, libsql.WithAuthToken(authToken))
 			}
+			if proxy != "" {
+				options = append(options, libsql.WithProxy(proxy))
+			}
+			connector, err := libsql.NewConnector(dbUri, options...)
 			if err != nil {
 				return nil, err
 			}

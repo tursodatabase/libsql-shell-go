@@ -24,7 +24,7 @@ type DbTestContext struct {
 }
 
 func NewTestContext(t *testing.T, dbUri string, authToken string) *DbTestContext {
-	db, err := db.NewDb(dbUri, authToken)
+	db, err := db.NewDb(dbUri, authToken, "")
 	if err != nil {
 		t.Fatalf("Fail to create new db. err: %v", err)
 	}
