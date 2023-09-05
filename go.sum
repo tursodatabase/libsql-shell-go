@@ -80,6 +80,8 @@ github.com/libsql/libsql-client-go v0.0.0-20230821143203-d21eb9b18da3 h1:1Mbu+//
 github.com/libsql/libsql-client-go v0.0.0-20230821143203-d21eb9b18da3/go.mod h1:vRgoLt8Z3fbSckp6t+DwG7anTW6xgD3nsTDePnqEojs=
 github.com/libsql/libsql-client-go v0.0.0-20230905063757-69a9551abbae h1:YUleVakvzkkDilY+sJzgSMEDzDf1S9fI9CMaKLu99CA=
 github.com/libsql/libsql-client-go v0.0.0-20230905063757-69a9551abbae/go.mod h1:T+1lRvREkstNW7bmF1PTiDhV6hji0mrlfZkZuk/UPhw=
+github.com/libsql/libsql-client-go v0.0.0-20230905145159-f3b5580792ec h1:dQjEQaFD8Dtw9vpKSQc57SjSPagzMPYtSnKwT9VY0gs=
+github.com/libsql/libsql-client-go v0.0.0-20230905145159-f3b5580792ec/go.mod h1:T+1lRvREkstNW7bmF1PTiDhV6hji0mrlfZkZuk/UPhw=
 github.com/libsql/sqlite-antlr4-parser v0.0.0-20230802215326-5cb5bb604475 h1:6PfEMwfInASh9hkN83aR0j4W/eKaAZt/AURtXAXlas0=
 github.com/libsql/sqlite-antlr4-parser v0.0.0-20230802215326-5cb5bb604475/go.mod h1:20nXSmcf0nAscrzqsXeC2/tA3KkV2eCiJqYuyAgl+ss=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
