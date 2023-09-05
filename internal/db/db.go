@@ -20,8 +20,8 @@ import (
 type driver int
 
 const (
-	libsql driver = iota
-	sqlite3
+	libsqlDriver driver = iota
+	sqlite3Driver
 )
 
 type Db struct {
@@ -93,13 +93,13 @@ func NewDb(dbUri string, authToken string) (*Db, error) {
 	if IsUrl(dbUrl) {
 		var validSqldUrl bool
 		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUrl); validSqldUrl {
-			db.driver = libsql
+			db.driver = libsqlDriver
 			db.sqlDb, err = sql.Open("libsql", dbUrl)
 		} else {
 			return nil, &shellerrors.ProtocolError{}
 		}
 	} else {
-		db.driver = sqlite3
+		db.driver = sqlite3Driver
 		db.sqlDb, err = sql.Open("sqlite3", dbUri)
 	}
 	if err != nil {
@@ -181,8 +181,8 @@ func (db *Db) prepareStatementsIntoQueries(statementsString string) []string {
 	//
 	// libsql driver doesn't accept multiple statements if using websocket connection
 	mustSplitStatementsIntoMultipleQueries :=
-		db.driver == sqlite3 ||
-			db.driver == libsql && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
+		db.driver == sqlite3Driver ||
+			db.driver == libsqlDriver && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
 
 	if mustSplitStatementsIntoMultipleQueries {
 		stmts, _ := sqliteparserutils.SplitStatement(statementsString)
