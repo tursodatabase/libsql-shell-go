@@ -24,13 +24,18 @@ const (
 )
 
 type Db struct {
-	Uri string
+	Uri       string
+	AuthToken string
 
 	sqlDb     *sql.DB
 	driver    driver
 	urlScheme string
 
 	cancelRunningQuery func()
+}
+
+func (db *Db) IsRemote() bool {
+	return db.driver == libsqlDriver
 }
 
 type StatementsResult struct {
@@ -69,7 +74,7 @@ func newRowResultWithError(err error) *rowResult {
 func NewDb(dbUri, authToken, proxy string) (*Db, error) {
 	var err error
 
-	var db = Db{Uri: dbUri}
+	var db = Db{Uri: dbUri, AuthToken: authToken}
 
 	if IsUrl(dbUri) {
 		var validSqldUrl bool

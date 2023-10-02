@@ -1,8 +1,13 @@
 package shellcmd
 
 import (
+	"bufio"
+	"context"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/libsql/libsql-shell-go/internal/db"
 	"github.com/spf13/cobra"
@@ -18,20 +23,54 @@ var dumpCmd = &cobra.Command{
 			return fmt.Errorf("missing db connection")
 		}
 
-		fmt.Fprintln(config.OutF, "PRAGMA foreign_keys=OFF;")
-
-		getTableNamesStatementResult, err := getDbTableNames(config)
-		if err != nil {
-			return err
+		if config.Db.IsRemote() {
+			return dumpRemote(cmd.Context(), config)
+		} else {
+			return dumpLocal(config)
 		}
-
-		err = dumpTables(getTableNamesStatementResult, config)
-		if err != nil {
-			return err
-		}
-
-		return nil
 	},
+}
+
+func dumpLocal(config *DbCmdConfig) error {
+	fmt.Fprintln(config.OutF, "PRAGMA foreign_keys=OFF;")
+	fmt.Fprintln(config.OutF, "BEGIN TRANSACTION;")
+
+	getTableNamesStatementResult, err := getDbTableNames(config)
+	if err != nil {
+		return err
+	}
+
+	err = dumpTables(getTableNamesStatementResult, config)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(config.OutF, "COMMIT;")
+	return nil
+}
+
+func dumpRemote(ctx context.Context, config *DbCmdConfig) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", config.Db.Uri+"/dump", nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Authorization", "Bearer "+config.Db.AuthToken)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	reader := bufio.NewReader(resp.Body)
+	for err != io.EOF {
+		var line string
+		if line, err = reader.ReadString('\n'); err != nil && err != io.EOF {
+			return err
+		}
+		fmt.Fprint(config.OutF, line)
+	}
+	return nil
 }
 
 func dumpTables(getTableStatementResult db.StatementResult, config *DbCmdConfig) error {
@@ -79,16 +118,16 @@ func dumpTableRecords(tableRecordsStatementResult db.StatementResult, config *Db
 
 		var formattedTableName = tableName
 		if db.NeedsEscaping(tableName) {
-			formattedTableName = "'" + db.EscapeSingleQuotes(tableName) + "'"
+			formattedTableName = "\"" + db.EscapeSingleQuotes(tableName) + "\""
 		}
-		insertStatement := "INSERT INTO " + formattedTableName + " VALUES ("
+		insertStatement := "INSERT INTO " + formattedTableName + " VALUES("
 
 		tableRecordsFormattedRow, err := db.FormatData(tableRecordsRowResult.Row, db.SQLITE)
 		if err != nil {
 			return err
 		}
 
-		insertStatement += strings.Join(tableRecordsFormattedRow, ", ")
+		insertStatement += strings.Join(tableRecordsFormattedRow, ",")
 		insertStatement += ");"
 		fmt.Fprintln(config.OutF, insertStatement)
 	}
@@ -97,7 +136,7 @@ func dumpTableRecords(tableRecordsStatementResult db.StatementResult, config *Db
 }
 
 func getDbTableNames(config *DbCmdConfig) (db.StatementResult, error) {
-	listTablesResult, err := config.Db.ExecuteStatements("SELECT name FROM sqlite_master WHERE type='table' and name not like 'sqlite_%' and name != '_litestream_seq' and name != '_litestream_lock' and name != 'libsql_wasm_func_table'")
+	listTablesResult, err := config.Db.ExecuteStatements("SELECT name FROM sqlite_master WHERE type='table' and name not like 'sqlite_%' and name != '_litestream_seq' and name != '_litestream_lock'")
 	if err != nil {
 		return db.StatementResult{}, err
 	}
