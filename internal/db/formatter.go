@@ -133,6 +133,10 @@ func formatValue(val interface{}, formatter Formatter) (string, error) {
 	if val == nil {
 		return formatter.formatNull(), nil
 	} else {
+		switch v := val.(type) {
+		case time.Time:
+			return formatter.formatDateTime(v), nil
+		}
 		rv := reflect.ValueOf(val)
 		switch rv.Kind() {
 		case reflect.Struct:
