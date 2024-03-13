@@ -48,10 +48,17 @@ func dumpLocal(config *DbCmdConfig) error {
 	return nil
 }
 
+func getDbURLForDump(u string) string {
+	if strings.HasPrefix(u, "wss://") || strings.HasPrefix(u, "ws://") {
+		return strings.Replace(u, "ws", "http", 1)
+	}
+	return u
+}
+
 func dumpRemote(ctx context.Context, config *DbCmdConfig) error {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, "GET", config.Db.Uri+"/dump", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", getDbURLForDump(config.Db.Uri+"/dump"), nil)
 	if err != nil {
 		return err
 	}
