@@ -131,11 +131,8 @@ func (db *Db) ExecuteStatements(statementsString string) (StatementsResult, erro
 }
 
 func (db *Db) executeQueriesAndPopulateChannel(queries []string, statementResultCh chan StatementResult) {
-	for _, query := range queries {
-		if shouldContinue := db.executeQuery(query, statementResultCh); !shouldContinue {
-			return
-		}
-	}
+	query := strings.Join(queries, "; ")
+	db.executeQuery(query, statementResultCh)
 }
 
 func (db *Db) ExecuteAndPrintStatements(statementsString string, outF io.Writer, withoutHeader bool, printMode enums.PrintMode) error {

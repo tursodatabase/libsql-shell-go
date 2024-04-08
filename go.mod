@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9
+	github.com/antlr4-go/antlr/v4 v4.13.0
 	github.com/fatih/color v1.14.1
 	github.com/frankban/quicktest v1.14.4
 	github.com/go-playground/validator/v10 v10.11.2
@@ -13,7 +13,7 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.0
-	github.com/libsql/sqlite-antlr4-parser v0.0.0-20230802215326-5cb5bb604475
+	github.com/libsql/sqlite-antlr4-parser v0.0.0-20240327125255-dbf53b6cbf06
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
@@ -25,7 +25,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -34,15 +33,14 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	nhooyr.io/websocket v1.8.7 // indirect
+	nhooyr.io/websocket v1.8.10 // indirect
 )
 
 require (
@@ -55,3 +53,5 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 )
+
+replace github.com/tursodatabase/libsql-client-go => ../libsql-client-go
