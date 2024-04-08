@@ -131,6 +131,11 @@ func (db *Db) ExecuteStatements(statementsString string) (StatementsResult, erro
 }
 
 func (db *Db) executeQueriesAndPopulateChannel(queries []string, statementResultCh chan StatementResult) {
+	if strings.HasPrefix(db.urlScheme, "http") {
+		query := strings.Join(queries, "; ")
+		db.executeQuery(query, statementResultCh)
+		return
+	}
 	for _, query := range queries {
 		if shouldContinue := db.executeQuery(query, statementResultCh); !shouldContinue {
 			return
