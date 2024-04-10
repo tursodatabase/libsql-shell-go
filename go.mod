@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9
+	github.com/antlr4-go/antlr/v4 v4.13.0
 	github.com/fatih/color v1.14.1
 	github.com/frankban/quicktest v1.14.4
 	github.com/go-playground/validator/v10 v10.11.2
@@ -21,7 +21,6 @@ require (
 )
 
 require (
-	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
