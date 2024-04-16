@@ -187,7 +187,7 @@ func (s *DBRootCommandShellSuite) Test_GivenAEmptyTable_WhenCallDotDumpCommand_E
 	s.tc.Assert(errS, qt.Equals, "")
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nCOMMIT;"
 	s.tc.AssertSqlEquals(outS, prefix+expected)
@@ -205,7 +205,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableConainingRandomFields_WhenInse
 
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " alltypes (t text, i integer, r real, b blob);\nINSERT INTO alltypes VALUES('text',99,3.14,X'0123456789ABCDEF');\nCOMMIT;"
 
@@ -223,7 +223,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableConainingFieldsWithALLTypes_Wh
 
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nINSERT INTO alltypes VALUES(NULL,'text2','defaultValue',NULL,0,0,NULL,1.5,0,NULL,0,0,NULL,X'0123456789ABCDEF','x\"0\"');\nCOMMIT;"
 
@@ -242,7 +242,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAnd
 
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " alltypes (textNullable text, textNotNullable text NOT NULL, textWithDefault text DEFAULT 'defaultValue', \n\tintNullable INTEGER, intNotNullable INTEGER NOT NULL, intWithDefault INTEGER DEFAULT '0', \n\tfloatNullable REAL, floatNotNullable REAL NOT NULL, floatWithDefault REAL DEFAULT '0.0', \n\tunknownNullable NUMERIC, unknownNotNullable NUMERIC NOT NULL, unknownWithDefault NUMERIC DEFAULT 0.0, \n\tblobNullable BLOB, blobNotNullable BLOB NOT NULL, blobWithDefault BLOB DEFAULT 'x\"0\"');\nCREATE INDEX idx_textNullable on alltypes (textNullable);\nCREATE INDEX idx_intNotNullable on alltypes (intNotNullable) WHERE intNotNullable > 1;\nCOMMIT;"
 
@@ -261,7 +261,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_Whe
 
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " t (id integer primary key, textfield text, intfield integer);\ninsert into t values(0,'x''x',0);\ncommit;"
 
@@ -277,7 +277,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableNameStartingWithNumber_WhenCal
 
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " \"8test\" (id integer primary key, textfield text, intfield integer);\ninsert into \"8test\" values(1,'value',1);\ncommit;"
 
@@ -293,7 +293,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableNameWithSpecialCharacters_When
 
 	prefix := "PRAGMA foreign_keys=OFF;\nBEGIN TRANSACTION;\nCREATE TABLE"
 	if !strings.HasSuffix(s.dbUri, "test.sqlite") {
-		prefix += " if not exists libsql_wasm_func_table (name text primary key, body text) without rowid;\nCREATE TABLE if not exists"
+		prefix += " if not exists"
 	}
 	expected := " \"t+e(s!t?\" (id integer primary key, textfield text, intfield integer);\ninsert into \"t+e(s!t?\" values(1,'value',1);\ncommit;"
 
