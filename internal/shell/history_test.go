@@ -2,7 +2,7 @@ package shell_test
 
 import (
 	"fmt"
-	"os"
+	"github.com/kirsle/configdir"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -15,7 +15,7 @@ const historyName = "libsql"
 var sharedHistoryFileName = fmt.Sprintf(".%s_shell_history", historyName)
 
 func getExpectedHistoryFullPath(name string) string {
-	return fmt.Sprintf("%s/.%s/.%s_shell_history", os.Getenv("HOME"), historyName, name)
+	return fmt.Sprintf("%s/.%s/.%s_shell_history", configdir.LocalConfig("turso"), historyName, name)
 }
 
 func TestGetHistoryFileBasedOnMode_GivenLocalHistory_WhenPathIsEmpty_ExpectSharedLocalHistory(t *testing.T) {

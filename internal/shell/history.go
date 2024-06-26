@@ -2,6 +2,7 @@ package shell
 
 import (
 	"fmt"
+	"github.com/kirsle/configdir"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -35,7 +36,7 @@ func getHistoryFileName(name string) string {
 }
 
 func getHistoryFolderPath(historyName string) string {
-	path := filepath.Join(os.Getenv("HOME"), fmt.Sprintf(".%s", historyName))
+	path := filepath.Join(configdir.LocalConfig("turso"), fmt.Sprintf(".%s", historyName))
 	_ = os.MkdirAll(path, os.ModePerm)
 	return path
 }
