@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tursodatabase/libsql-client-go/libsql"
+	"github.com/tursodatabase/libsql-client-go/sqliteparserutils"
 
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
