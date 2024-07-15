@@ -92,6 +92,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/tursodatabase/libsql-client-go v0.0.0-20240628122535-1c47b26184e8 h1:XM3aeBrpNrkvi48EiKCtMNAgsiaAaAOCHAW9SaIWouo=
 github.com/tursodatabase/libsql-client-go v0.0.0-20240628122535-1c47b26184e8/go.mod h1:fblU7nZYWAROzJzkpln8teKFDtdRvAOmZHeIpahY4jk=
+github.com/tursodatabase/libsql-client-go v0.0.0-20240715111033-518abad12431 h1:92bBPzYCsSLCvpWHgmKBUHCtqwMX62rxhGxs/QCvQgs=
+github.com/tursodatabase/libsql-client-go v0.0.0-20240715111033-518abad12431/go.mod h1:3Y9LlWC05q63NdmViO+2qV22LUjpfYLZWEYfE7ndpmU=
 golang.org/x/crypto v0.5.0 h1:U/0M97KRkSFvyD/3FSmdP5W5swImpNgle/EHFhOsQPE=
 golang.org/x/crypto v0.5.0/go.mod h1:NK/OQwhpMQP3MwtdjgLlYHnH9ebylxKWv3e0fK+mkQU=
 golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 h1:aAcj0Da7eBAtrTp03QXWvm88pSyOt+UgdZw2BFZ+lEw=

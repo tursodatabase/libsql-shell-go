@@ -18,7 +18,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.9.0
-	github.com/tursodatabase/libsql-client-go v0.0.0-20240628122535-1c47b26184e8
+	github.com/tursodatabase/libsql-client-go v0.0.0-20240715111033-518abad12431
 )
 
 require (
