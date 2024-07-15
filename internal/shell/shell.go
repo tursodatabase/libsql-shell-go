@@ -12,9 +12,9 @@ import (
 	"github.com/libsql/libsql-shell-go/internal/shellcmd"
 	"github.com/libsql/libsql-shell-go/internal/suggester"
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
-	"github.com/libsql/sqlite-antlr4-parser/sqliteparser"
-	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
 	"github.com/spf13/cobra"
+	"github.com/tursodatabase/libsql-client-go/sqliteparser"
+	"github.com/tursodatabase/libsql-client-go/sqliteparserutils"
 )
 
 const QUIT_COMMAND = ".quit"
