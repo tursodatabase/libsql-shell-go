@@ -24,12 +24,13 @@ type ShellConfig struct {
 	WelcomeMessage            *string
 	AfterDbConnectionCallback func()
 	DisableAutoCompletion     bool
+	SchemaDb                  bool
 }
 
 func RunShell(config ShellConfig) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-	db, err := db.NewDb(config.DbUri, config.AuthToken, config.Proxy)
+	db, err := db.NewDb(config.DbUri, config.AuthToken, config.Proxy, config.SchemaDb)
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func RunShell(config ShellConfig) error {
 func RunShellLine(config ShellConfig, line string) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-	db, err := db.NewDb(config.DbUri, config.AuthToken, config.Proxy)
+	db, err := db.NewDb(config.DbUri, config.AuthToken, config.Proxy, config.SchemaDb)
 	if err != nil {
 		return err
 	}

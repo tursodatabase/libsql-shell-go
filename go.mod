@@ -1,11 +1,11 @@
 module github.com/libsql/libsql-shell-go
 
-go 1.21
+go 1.22
 
-toolchain go1.21.0
+toolchain go1.22.1
 
 require (
-	github.com/antlr4-go/antlr/v4 v4.13.0
+	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/fatih/color v1.14.1
 	github.com/frankban/quicktest v1.14.4
 	github.com/go-playground/validator/v10 v10.11.2
@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.9.0
-	github.com/tursodatabase/libsql-client-go v0.0.0-20240715111033-518abad12431
+	github.com/tursodatabase/libsql-client-go v0.0.0-20240716175905-469d2977ed53
 )
 
 require (
@@ -26,7 +26,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -44,9 +44,9 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
+	golang.org/x/exp v0.0.0-20240716160929-1d5bc16f04a8 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	nhooyr.io/websocket v1.8.10 // indirect
+	nhooyr.io/websocket v1.8.11 // indirect
 )
