@@ -45,10 +45,10 @@ To query sql managed by [Turso](https://turso.tech), you need a database URL and
 1. Get your database URL: `turso db show <db_name>`. The URL will be on the format `libsql://<db_name>-<username>.turso.io`
 1. Create a database token: `turso db tokens create <db_name>`
 
-Add the token to the URL in the `authToken` query string parameter and provide that to the shell:
+Provide the database URL and token using the `--auth` flag:
 
 ```sh
-go run ./cmd/libsql-shell/main.go libsql://<db_name>-<username>.turso.io/?auth=<db_token>`
+go run ./cmd/libsql-shell/main.go libsql://<db_name>-<username>.turso.io --auth <db_token>
 ```
 
 ### Built-in help
