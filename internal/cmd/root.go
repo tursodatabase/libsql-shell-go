@@ -12,9 +12,10 @@ import (
 )
 
 type RootArgs struct {
-	statements string
-	quiet      bool
-	authToken  string
+	statements          string
+	quiet               bool
+	authToken           string
+	remoteEncryptionKey string
 }
 
 func NewRootCmd() *cobra.Command {
@@ -26,14 +27,15 @@ func NewRootCmd() *cobra.Command {
 		Args:         cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			shellConfig := shell.ShellConfig{
-				DbUri:       args[0],
-				InF:         cmd.InOrStdin(),
-				OutF:        cmd.OutOrStdout(),
-				ErrF:        cmd.ErrOrStderr(),
-				HistoryMode: enums.PerDatabaseHistory,
-				HistoryName: "libsql",
-				QuietMode:   rootArgs.quiet,
-				AuthToken:   rootArgs.authToken,
+				DbUri:               args[0],
+				InF:                 cmd.InOrStdin(),
+				OutF:                cmd.OutOrStdout(),
+				ErrF:                cmd.ErrOrStderr(),
+				HistoryMode:         enums.PerDatabaseHistory,
+				HistoryName:         "libsql",
+				QuietMode:           rootArgs.quiet,
+				AuthToken:           rootArgs.authToken,
+				RemoteEncryptionKey: rootArgs.remoteEncryptionKey,
 			}
 
 			if cmd.Flag("exec").Changed {
@@ -51,6 +53,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.Flags().StringVarP(&rootArgs.statements, "exec", "e", "", "SQL statements separated by ;")
 	rootCmd.Flags().BoolVarP(&rootArgs.quiet, "quiet", "q", false, "Don't print welcome message")
 	rootCmd.Flags().StringVar(&rootArgs.authToken, "auth", "", "Add a JWT Token.")
+	rootCmd.Flags().StringVar(&rootArgs.remoteEncryptionKey, "remote-encryption-key", "", "Add an encryption key for encrypted databases.")
 
 	return rootCmd
 }

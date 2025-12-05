@@ -71,7 +71,7 @@ func newRowResultWithError(err error) *rowResult {
 	return &rowResult{Err: treatedErr}
 }
 
-func NewDb(dbUri, authToken, proxy string, schemaDb bool) (*Db, error) {
+func NewDb(dbUri, authToken, proxy string, schemaDb bool, remoteEncryptionKey string) (*Db, error) {
 	var err error
 
 	var db = Db{Uri: dbUri, AuthToken: authToken}
@@ -89,6 +89,9 @@ func NewDb(dbUri, authToken, proxy string, schemaDb bool) (*Db, error) {
 			}
 			if schemaDb {
 				options = append(options, libsql.WithSchemaDb(schemaDb))
+			}
+			if remoteEncryptionKey != "" {
+				options = append(options, libsql.WithRemoteEncryptionKey(remoteEncryptionKey))
 			}
 			connector, err := libsql.NewConnector(dbUri, options...)
 			if err != nil {
