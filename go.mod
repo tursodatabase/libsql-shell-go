@@ -1,8 +1,6 @@
 module github.com/libsql/libsql-shell-go
 
-go 1.22
-
-toolchain go1.22.1
+go 1.24.0
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.1
@@ -14,15 +12,14 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.0
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/libsql/sqlite-antlr4-parser v0.0.0-20240721121621-c0bdc870f11c
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.9.0
-	github.com/tursodatabase/libsql-client-go v0.0.0-20251205113610-b69dd6e475fc
+	github.com/tursodatabase/go-libsql v0.0.0-20251025125656-00da49cd4a6e
 )
 
 require (
 	github.com/chzyer/readline v1.5.1
-	github.com/coder/websocket v1.8.12 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -45,7 +42,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20240716160929-1d5bc16f04a8 // indirect
+	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
