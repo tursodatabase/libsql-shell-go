@@ -102,8 +102,8 @@ func (s *DBRootCommandShellSuite) Test_WhenCallDotHelpCommand_ExpectAListWithAll
 func (s *DBRootCommandShellSuite) Test_GivenAEmptyDb_WhenCallDotReadCommand_ExpectToSeeATableWithOneEntry() {
 	content := `CREATE TABLE IF NOT EXISTS testread (name TEXT);
 		/* Comment in the middle of the file.*/
-		INSERT INTO testread VALUES("test");
-		
+		INSERT INTO testread VALUES('test');
+
 		SELECT * FROM testread;`
 	file, filePath := s.tc.CreateTempFile(content)
 
@@ -251,7 +251,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableWithRecords_WhenCreateIndexAnd
 
 func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_WhenCalllDotDumpCommand_ExpectSingleQuoteScape() {
 	s.tc.CreateEmptySimpleTable("t")
-	_, errS, err := s.tc.Execute("INSERT INTO t VALUES(0, \"x'x\", 0)")
+	_, errS, err := s.tc.Execute("INSERT INTO t VALUES(0, 'x''x', 0)")
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
@@ -302,7 +302,7 @@ func (s *DBRootCommandShellSuite) Test_GivenATableNameWithSpecialCharacters_When
 
 func (s *DBRootCommandShellSuite) Test_GivenATableWithRecordsWithSingleQuote_WhenCalllSelectAllFromTable_ExpectSingleQuoteScape() {
 	s.tc.CreateEmptySimpleTable("t")
-	_, errS, err := s.tc.Execute("INSERT INTO t VALUES (0, \"x'x\", 0)")
+	_, errS, err := s.tc.Execute("INSERT INTO t VALUES (0, 'x''x', 0)")
 	s.tc.Assert(err, qt.IsNil)
 	s.tc.Assert(errS, qt.Equals, "")
 
