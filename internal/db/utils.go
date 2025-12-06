@@ -19,7 +19,8 @@ func IsValidSqldUrl(uri string) (bool, string) {
 	if err != nil {
 		return false, ""
 	}
-	return url.Scheme == "libsql" || url.Scheme == "wss" || url.Scheme == "ws" || url.Scheme == "http" || url.Scheme == "https", url.Scheme
+	// go-libsql supports libsql://, http://, https:// schemes (no websocket)
+	return url.Scheme == "libsql" || url.Scheme == "http" || url.Scheme == "https", url.Scheme
 }
 
 func EscapeSingleQuotes(value string) string {
