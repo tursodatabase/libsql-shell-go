@@ -5,37 +5,29 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"net/url"
 	"reflect"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/tursodatabase/libsql-client-go/libsql"
-	"github.com/tursodatabase/libsql-client-go/sqliteparserutils"
+	"github.com/libsql/sqlite-antlr4-parser/sqliteparserutils"
+	_ "github.com/tursodatabase/go-libsql"
 
 	"github.com/libsql/libsql-shell-go/pkg/shell/enums"
 	"github.com/libsql/libsql-shell-go/pkg/shell/shellerrors"
-)
-
-type driver int
-
-const (
-	libsqlDriver driver = iota
-	sqlite3Driver
 )
 
 type Db struct {
 	Uri       string
 	AuthToken string
 
-	sqlDb     *sql.DB
-	driver    driver
-	urlScheme string
+	sqlDb    *sql.DB
+	isRemote bool
 
 	cancelRunningQuery func()
 }
 
 func (db *Db) IsRemote() bool {
-	return db.driver == libsqlDriver
+	return db.isRemote
 }
 
 type StatementsResult struct {
@@ -71,40 +63,45 @@ func newRowResultWithError(err error) *rowResult {
 	return &rowResult{Err: treatedErr}
 }
 
-func NewDb(dbUri, authToken, proxy string, schemaDb bool, remoteEncryptionKey string) (*Db, error) {
-	var err error
-
+func NewDb(dbUri, authToken, _proxy string, _schemaDb bool, remoteEncryptionKey string) (*Db, error) {
 	var db = Db{Uri: dbUri, AuthToken: authToken}
 
+	// Determine the type of database connection
+	connStr := dbUri
 	if IsUrl(dbUri) {
-		var validSqldUrl bool
-		if validSqldUrl, db.urlScheme = IsValidSqldUrl(dbUri); validSqldUrl {
-			db.driver = libsqlDriver
-			var options []libsql.Option
-			if authToken != "" {
-				options = append(options, libsql.WithAuthToken(authToken))
+		isRemote, scheme := IsValidSqldUrl(dbUri)
+		if isRemote {
+			// Remote URL (libsql://, http://, https://)
+			db.isRemote = true
+			if authToken != "" || remoteEncryptionKey != "" {
+				u, err := url.Parse(dbUri)
+				if err != nil {
+					return nil, err
+				}
+				q := u.Query()
+				if authToken != "" {
+					q.Set("authToken", authToken)
+				}
+				if remoteEncryptionKey != "" {
+					q.Set("remoteEncryptionKey", remoteEncryptionKey)
+				}
+				u.RawQuery = q.Encode()
+				connStr = u.String()
 			}
-			if proxy != "" {
-				options = append(options, libsql.WithProxy(proxy))
-			}
-			if schemaDb {
-				options = append(options, libsql.WithSchemaDb(schemaDb))
-			}
-			if remoteEncryptionKey != "" {
-				options = append(options, libsql.WithRemoteEncryptionKey(remoteEncryptionKey))
-			}
-			connector, err := libsql.NewConnector(dbUri, options...)
-			if err != nil {
-				return nil, err
-			}
-			db.sqlDb = sql.OpenDB(connector)
+		} else if scheme == "file" {
+			// Local file URL - use as-is
+			db.isRemote = false
 		} else {
 			return nil, &shellerrors.ProtocolError{}
 		}
 	} else {
-		db.driver = sqlite3Driver
-		db.sqlDb, err = sql.Open("sqlite3", dbUri)
+		// Plain path - treat as local file, convert to file: URL for go-libsql
+		db.isRemote = false
+		connStr = "file:" + dbUri
 	}
+
+	var err error
+	db.sqlDb, err = sql.Open("libsql", connStr)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +109,9 @@ func NewDb(dbUri, authToken, proxy string, schemaDb bool, remoteEncryptionKey st
 }
 
 func (db *Db) TestConnection() error {
-	_, err := db.sqlDb.Exec("SELECT 1;")
+	row := db.sqlDb.QueryRow("SELECT 1")
+	var result int
+	err := row.Scan(&result)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database. err: %v", err)
 	}
@@ -179,20 +178,9 @@ func (db *Db) executeQuery(query string, statementResultCh chan StatementResult)
 }
 
 func (db *Db) prepareStatementsIntoQueries(statementsString string) []string {
-	// sqlite3 driver just run the first query that we send. So we must split the statements and send them one by one
-	// e.g If we execute query "select 1; select 2;" with it, just the first one ("select 1;") would be executed
-	//
-	// libsql driver doesn't accept multiple statements if using websocket connection
-	mustSplitStatementsIntoMultipleQueries :=
-		db.driver == sqlite3Driver ||
-			db.driver == libsqlDriver && (db.urlScheme == "libsql" || db.urlScheme == "wss" || db.urlScheme == "ws")
-
-	if mustSplitStatementsIntoMultipleQueries {
-		stmts, _ := sqliteparserutils.SplitStatement(statementsString)
-		return stmts
-	}
-
-	return []string{statementsString}
+	// TODO: check if this required
+	stmts, _ := sqliteparserutils.SplitStatement(statementsString)
+	return stmts
 }
 
 func getColumnNames(rows *sql.Rows) ([]string, error) {
