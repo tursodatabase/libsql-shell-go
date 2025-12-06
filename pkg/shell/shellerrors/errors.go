@@ -43,5 +43,5 @@ func (e *ProtocolError) Error() string {
 	return e.userError()
 }
 func (e *ProtocolError) userError() string {
-	return "invalid sqld protocol. valid protocols are libsql://, wss://, ws://, https:// and http://"
+	return "invalid database URL. valid protocols are libsql://, https://, http://, or file://"
 }

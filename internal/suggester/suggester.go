@@ -5,7 +5,7 @@ import (
 	"unicode"
 
 	"github.com/antlr4-go/antlr/v4"
-	"github.com/tursodatabase/libsql-client-go/sqliteparser"
+	"github.com/libsql/sqlite-antlr4-parser/sqliteparser"
 )
 
 func SuggestCompletion(currentInput string) []string {
