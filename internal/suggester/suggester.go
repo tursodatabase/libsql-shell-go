@@ -9,6 +9,10 @@ import (
 )
 
 func SuggestCompletion(currentInput string) []string {
+	if len(currentInput) == 0 {
+		return nil
+	}
+
 	suggestions := make([]string, 0)
 
 	lastChar := currentInput[len(currentInput)-1]

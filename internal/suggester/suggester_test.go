@@ -77,3 +77,7 @@ func Test_GivenIncompleteTableName_WhenSuggestCompletion_ExpectNoSuggestion(t *t
 
 	assert.ElementsMatch([]string{}, gotSuggestion)
 }
+
+func Test_GivenEmptyInput_WhenSuggestCompletion_ExpectNoSuggestion(t *testing.T) {
+	assert.Nil(t, suggester.SuggestCompletion(""))
+}
